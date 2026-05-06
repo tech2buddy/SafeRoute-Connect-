@@ -1,0 +1,29 @@
+{% extends "app_base.html" %}
+
+{% block page_actions %}
+    <a href="{% url 'safety_map' %}" class="app-inline-button">Open safety map</a>
+    <a href="{% url 'report_incident' %}" class="app-inline-button app-inline-button-primary">New report</a>
+{% endblock %}
+
+{% block page_content %}
+    <article class="dashboard-card app-list-card">
+        <div class="dashboard-card-head">
+            <h2>Community Feed</h2>
+            <a href="{% url 'alerts' %}">See alerts</a>
+        </div>
+        <div class="app-feed-list">
+            {% for report in reports %}
+                <div class="app-feed-card">
+                    <div class="app-feed-head">
+                        <div>
+                            <strong>{{ report.title }}</strong>
+                            <small>{{ report.location }} · {{ report.time }}</small>
+                        </div>
+                        <span class="route-risk-tag {{ report.severity_key }}">{{ report.severity_label }}</span>
+                    </div>
+                    <p>{{ report.description }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </article>
+{% endblock %}

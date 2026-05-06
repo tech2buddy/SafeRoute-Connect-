@@ -1,0 +1,48 @@
+{% extends "app_base.html" %}
+
+{% block page_actions %}
+    <a href="{% url 'community_reports' %}" class="app-inline-button">See community feed</a>
+{% endblock %}
+
+{% block page_content %}
+    <div class="app-grid-two">
+        <article class="dashboard-card app-form-card">
+            <h2>Log a Safety Issue</h2>
+            <form method="post" class="app-form">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <p class="field-error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="route-find-button route-find-button-submit">
+                    <span>Submit Incident</span>
+                    <span class="route-arrow" aria-hidden="true"></span>
+                </button>
+            </form>
+        </article>
+
+        <article class="dashboard-card app-list-card">
+            <div class="dashboard-card-head">
+                <h2>Recent Reports</h2>
+                <a href="{% url 'alerts' %}">View alerts</a>
+            </div>
+            <div class="report-list">
+                {% for report in recent_reports %}
+                    <div class="report-item">
+                        <span class="report-icon report-{{ report.severity_key }}"></span>
+                        <div class="report-copy">
+                            <strong>{{ report.title }}</strong>
+                            <small>{{ report.location }}</small>
+                        </div>
+                        <span class="report-time">{{ report.time }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </article>
+    </div>
+{% endblock %}

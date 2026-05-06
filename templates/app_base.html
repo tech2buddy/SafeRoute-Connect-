@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | SafeRoute Connect</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="dashboard-shell">
+        <header class="dashboard-topbar">
+            <a href="{% url 'home' %}" class="dashboard-brand">
+                <span class="dashboard-brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 96 108" role="img" focusable="false">
+                        <path d="M48 6 82 18v28c0 27-18 42-34 54C32 88 14 73 14 46V18L48 6Z" fill="#fff" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/>
+                        <path d="M48 30c-7.2 0-13 5.7-13 12.7 0 9.1 13 21.1 13 21.1s13-12 13-21.1C61 35.7 55.2 30 48 30Z" fill="currentColor"/>
+                        <circle cx="48" cy="43" r="5" fill="#fff"/>
+                    </svg>
+                </span>
+                <span class="dashboard-brand-copy">
+                    <strong><span>SafeRoute</span> Connect</strong>
+                    <small>Community Safety Reporting System</small>
+                </span>
+            </a>
+
+            <div class="dashboard-userbar">
+                <button class="dashboard-bell" type="button" aria-label="Notifications">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 20.3c1.6 0 2.8-1.2 2.8-2.8H9.2c0 1.6 1.2 2.8 2.8 2.8Zm6-4.2H6.1l1.4-1.9v-4c0-2.7 1.7-5 4.3-5.7V3.4a.9.9 0 1 1 1.8 0v1.1c2.5.7 4.3 3 4.3 5.7v4l1.1 1.9Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="dashboard-badge">3</span>
+                </button>
+
+                <div class="dashboard-user-pill">
+                    <span class="dashboard-avatar" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="3.2" fill="#fff"/>
+                            <path d="M5 19c.8-3 3.5-4.8 7-4.8S18.2 16 19 19" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span class="dashboard-user-copy">
+                        {% if request.user.is_authenticated %}
+                            {{ request.user.username }}
+                        {% else %}
+                            Guest Explorer
+                        {% endif %}
+                    </span>
+                    <span class="dashboard-caret" aria-hidden="true"></span>
+                </div>
+
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'logout' %}" class="app-inline-button">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="app-inline-button">Login</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="dashboard-layout">
+            <aside class="dashboard-sidebar">
+                <a href="{% url 'routes' %}" class="dashboard-nav-item {% if active_page == 'dashboard' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 10.5 12 4l8 6.5V20H4z" fill="currentColor"/>
+                            <path d="M9 20v-6h6v6" fill="#fff"/>
+                        </svg>
+                    </span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'find_route' %}" class="dashboard-nav-item {% if active_page == 'find_route' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 18c1.2 0 2-1 2-2.1 0-.5-.2-1-.5-1.4l3.2-4.1c.4.2.8.3 1.3.3.3 0 .6 0 .9-.1l1.8 2.3c-.2.4-.3.8-.3 1.3 0 1.2.9 2.1 2.1 2.1s2.1-.9 2.1-2.1-.9-2.1-2.1-2.1c-.3 0-.6.1-.8.2l-1.9-2.4c.3-.4.4-.8.4-1.3 0-1.2-.9-2.1-2.1-2.1S10 7.6 10 8.8c0 .4.1.8.3 1.1L7 14c-.3-.1-.6-.2-1-.2-1.2 0-2.1.9-2.1 2.1S4.8 18 6 18Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span>Find Safe Route</span>
+                </a>
+                <a href="{% url 'my_routes' %}" class="dashboard-nav-item {% if active_page == 'my_routes' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7 6h10M7 12h10M7 18h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="5" cy="6" r="1.4" fill="currentColor"/>
+                            <circle cx="5" cy="12" r="1.4" fill="currentColor"/>
+                            <circle cx="5" cy="18" r="1.4" fill="currentColor"/>
+                        </svg>
+                    </span>
+                    <span>My Routes</span>
+                </a>
+                <a href="{% url 'report_incident' %}" class="dashboard-nav-item {% if active_page == 'report_incident' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 3 2.8 20h18.4L12 3Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                            <path d="M12 8.5v5.2M12 17.3h.01" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span>Report Incident</span>
+                </a>
+                <a href="{% url 'alerts' %}" class="dashboard-nav-item {% if active_page == 'alerts' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 20.3c1.6 0 2.8-1.2 2.8-2.8H9.2c0 1.6 1.2 2.8 2.8 2.8Zm6-4.2H6.1l1.4-1.9v-4c0-2.7 1.7-5 4.3-5.7V3.4a.9.9 0 1 1 1.8 0v1.1c2.5.7 4.3 3 4.3 5.7v4l1.1 1.9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span>Alerts</span>
+                </a>
+                <a href="{% url 'safety_map' %}" class="dashboard-nav-item {% if active_page == 'safety_map' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 6.5 9 4l6 2.3L20 4v13.5L15 20l-6-2.3L4 20Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            <path d="M9 4v13.7M15 6.3V20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span>Safety Map</span>
+                </a>
+                <a href="{% url 'community_reports' %}" class="dashboard-nav-item {% if active_page == 'community_reports' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="8" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                            <circle cx="16.5" cy="10.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M4 19c.7-2.8 3.3-4.7 6.2-4.7s5.4 1.9 6.1 4.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span>Community Reports</span>
+                </a>
+                <a href="{% url 'profile' %}" class="dashboard-nav-item {% if active_page == 'profile' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M5 19c.8-3 3.5-4.8 7-4.8S18.2 16 19 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span>Profile</span>
+                </a>
+                <a href="{% url 'settings' %}" class="dashboard-nav-item {% if active_page == 'settings' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="3.1" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6M17.8 17.8l-1.6-1.6M7.8 7.8 6.2 6.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span>Settings</span>
+                </a>
+                <a href="{% url 'support' %}" class="dashboard-nav-item {% if active_page == 'support' %}is-active{% endif %}">
+                    <span class="dashboard-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M9.5 9.5a2.5 2.5 0 1 1 3.8 2.2c-.8.5-1.3 1-1.3 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            <circle cx="12" cy="16.9" r="1" fill="currentColor"/>
+                        </svg>
+                    </span>
+                    <span>Help &amp; Support</span>
+                </a>
+            </aside>
+
+            <main class="dashboard-main">
+                {% if messages %}
+                    <div class="dashboard-message-stack">
+                        {% for message in messages %}
+                            <div class="dashboard-message">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="app-page-head">
+                    <div>
+                        <span class="app-page-kicker">{{ page_title }}</span>
+                        <h1>{{ page_title }}</h1>
+                        <p>{{ page_subtitle }}</p>
+                    </div>
+                    <div class="app-page-actions">
+                        {% block page_actions %}{% endblock %}
+                    </div>
+                </div>
+
+                {% block page_content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

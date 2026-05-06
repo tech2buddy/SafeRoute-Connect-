@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | SafeRoute Connect</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="phone-frame placeholder-frame">
+            <div class="screen-content placeholder-content">
+                <div class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 96 108" role="img" focusable="false">
+                        <path d="M48 6 82 18v28c0 27-18 42-34 54C32 88 14 73 14 46V18L48 6Z" fill="#fff" stroke="#159347" stroke-width="7" stroke-linejoin="round"/>
+                        <path d="M48 30c-7.2 0-13 5.7-13 12.7 0 9.1 13 21.1 13 21.1s13-12 13-21.1C61 35.7 55.2 30 48 30Z" fill="#159347"/>
+                        <circle cx="48" cy="43" r="5" fill="#fff"/>
+                        <path d="M42 58h12l8 25H34l8-25Z" fill="#3b4752"/>
+                        <path d="M47 61h2v18h-2z" fill="#fff"/>
+                        <path d="M46 66h4v3h-4z" fill="#fff"/>
+                        <path d="M44 74h8v3h-8z" fill="#fff"/>
+                    </svg>
+                </div>
+
+                <h1>SafeRoute <span>Connect</span></h1>
+                <p class="subtitle">{{ page_title }} page coming next.</p>
+                <p class="description">
+                    This placeholder is here so your buttons work while you continue building the
+                    rest of the app.
+                </p>
+
+                <a href="/" class="btn btn-primary">Back Home</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

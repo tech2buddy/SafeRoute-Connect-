@@ -1,0 +1,229 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | SafeRoute Connect</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
+</head>
+<body>
+    <main class="auth-shell">
+        <header class="auth-topbar">
+            <a href="/" class="auth-brand">
+                <span class="auth-brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 96 108" role="img" focusable="false">
+                        <path d="M48 6 82 18v28c0 27-18 42-34 54C32 88 14 73 14 46V18L48 6Z" fill="#fff" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/>
+                        <path d="M48 30c-7.2 0-13 5.7-13 12.7 0 9.1 13 21.1 13 21.1s13-12 13-21.1C61 35.7 55.2 30 48 30Z" fill="currentColor"/>
+                        <circle cx="48" cy="43" r="5" fill="#fff"/>
+                    </svg>
+                </span>
+                <span class="auth-brand-copy">
+                    <strong><span>SafeRoute</span> Connect</strong>
+                    <small>Community Safety Reporting System</small>
+                </span>
+            </a>
+
+            <div class="auth-top-actions">
+                <a href="/" class="auth-top-link">Back Home</a>
+                <a href="/routes/" class="auth-top-link">View Dashboard</a>
+            </div>
+        </header>
+
+        <div class="auth-layout">
+            <section class="auth-card">
+                <p class="auth-kicker">Sign in</p>
+                <h1 class="auth-title">Welcome back</h1>
+                <p class="auth-copy">Sign in to continue reporting, checking alerts, and exploring safer routes.</p>
+
+                {% if messages %}
+                    <div class="message-stack">
+                        {% for message in messages %}
+                            <div class="message-banner">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="form-errors">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}">Username</label>
+                        {{ form.username }}
+                        {% for error in form.username.errors %}
+                            <p class="field-error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.password.id_for_label }}">Password</label>
+                        {{ form.password }}
+                        {% for error in form.password.errors %}
+                            <p class="field-error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary auth-submit">Login</button>
+                </form>
+
+                <p class="auth-switch">
+                    Don't have an account?
+                    <a href="/accounts/signup/">Create one</a>
+                </p>
+            </section>
+
+            <aside class="auth-aside">
+                <span class="auth-aside-kicker">Stay connected</span>
+                <h2>Sign in to view safer routes and community alerts.</h2>
+                <p>Access route guidance, recent incident updates, and safety information shared by your community.</p>
+
+                <div class="auth-preview-grid">
+                    <article class="auth-preview-card">
+                        <strong>12+</strong>
+                        <span>route suggestions available across the platform</span>
+                    </article>
+                    <article class="auth-preview-card">
+                        <strong>3</strong>
+                        <span>active alerts helping users stay aware</span>
+                    </article>
+                </div>
+
+                <div class="auth-route-preview auth-live-map-card">
+                    <div class="auth-map-head">
+                        <strong>Kimberley preview</strong>
+                        <span>Live map context</span>
+                    </div>
+                    <div class="auth-live-map" id="auth-live-map-login" aria-label="Live SafeRoute preview map"></div>
+                    <div class="auth-map-legend">
+                        <span><i class="legend-green"></i>Safer path</span>
+                        <span><i class="legend-orange"></i>Caution</span>
+                        <span><i class="legend-red"></i>Risk</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+    <script>
+        (() => {
+            const mapNode = document.getElementById("auth-live-map-login");
+            if (!mapNode || typeof L === "undefined") {
+                return;
+            }
+
+            const defaultCenter = [-28.7383, 24.7634];
+            const map = L.map(mapNode, {
+                zoomControl: false,
+                attributionControl: false,
+            }).setView(defaultCenter, 13);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+            }).addTo(map);
+
+            const previewGroup = L.featureGroup().addTo(map);
+
+            function renderPreview(center, isLive = false) {
+                previewGroup.clearLayers();
+
+                const [lat, lng] = center;
+                const saferPath = [
+                    [lat - 0.0038, lng - 0.0085],
+                    [lat - 0.0017, lng - 0.0041],
+                    [lat, lng],
+                ];
+                const cautionPath = [
+                    [lat, lng],
+                    [lat + 0.0019, lng + 0.0039],
+                ];
+                const riskPath = [
+                    [lat + 0.0019, lng + 0.0039],
+                    [lat + 0.0045, lng + 0.0079],
+                ];
+
+                [
+                    [saferPath, "#169b49"],
+                    [cautionPath, "#f59e0b"],
+                    [riskPath, "#ef4444"],
+                ].forEach(([points, color]) => {
+                    L.polyline(points, { color, weight: 6, lineCap: "round" }).addTo(previewGroup);
+                });
+
+                [
+                    { coords: saferPath[0], color: "#169b49" },
+                    { coords: cautionPath[1], color: "#f59e0b" },
+                    { coords: riskPath[1], color: "#ef4444" },
+                ].forEach(({ coords, color }) => {
+                    L.circleMarker(coords, {
+                        radius: 7,
+                        color,
+                        fillColor: "#ffffff",
+                        fillOpacity: 1,
+                        weight: 4,
+                    }).addTo(previewGroup);
+                });
+
+                if (isLive) {
+                    L.circleMarker(center, {
+                        radius: 8,
+                        color: "#2563eb",
+                        fillColor: "#ffffff",
+                        fillOpacity: 1,
+                        weight: 4,
+                    }).addTo(previewGroup).bindPopup("Your current location");
+
+                    L.circle(center, {
+                        radius: 220,
+                        color: "#2563eb",
+                        weight: 1.5,
+                        fillColor: "#93c5fd",
+                        fillOpacity: 0.12,
+                    }).addTo(previewGroup);
+                }
+
+                map.fitBounds(previewGroup.getBounds(), { padding: [18, 18] });
+            }
+
+            function useLiveLocation() {
+                if (!navigator.geolocation) {
+                    renderPreview(defaultCenter, false);
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        renderPreview([position.coords.latitude, position.coords.longitude], true);
+                    },
+                    () => {
+                        renderPreview(defaultCenter, false);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                    }
+                );
+            }
+
+            useLiveLocation();
+        })();
+    </script>
+</body>
+</html>

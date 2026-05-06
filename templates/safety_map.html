@@ -1,0 +1,384 @@
+{% extends "app_base.html" %}
+
+{% block extra_head %}
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
+{% endblock %}
+
+{% block page_actions %}
+    <a href="{% url 'report_incident' %}" class="app-inline-button app-inline-button-primary">Report incident</a>
+{% endblock %}
+
+{% block page_content %}
+    <section class="dashboard-stats app-alert-stat-grid">
+        <article class="dashboard-stat-card stat-safe">
+            <div class="dashboard-stat-top">
+                <div class="dashboard-stat-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2.5 19 5v5.8c0 5.5-3.6 8.6-7 10.7-3.4-2.1-7-5.2-7-10.7V5l7-2.5Z" fill="currentColor"/>
+                        <path d="m8.5 12.5 2.2 2.2 4.8-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <strong class="dashboard-stat-value">{{ map_counts.safe }}</strong>
+            </div>
+            <div class="dashboard-stat-copy">
+                <span>Low concern</span>
+            </div>
+        </article>
+        <article class="dashboard-stat-card stat-warning">
+            <div class="dashboard-stat-top">
+                <div class="dashboard-stat-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3 2.8 20h18.4L12 3Z" fill="currentColor"/>
+                        <path d="M12 8.5v5.2M12 17.2h.01" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <strong class="dashboard-stat-value">{{ map_counts.moderate }}</strong>
+            </div>
+            <div class="dashboard-stat-copy">
+                <span>Use caution</span>
+            </div>
+        </article>
+        <article class="dashboard-stat-card stat-purple">
+            <div class="dashboard-stat-top">
+                <div class="dashboard-stat-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3 2.8 20h18.4L12 3Z" fill="currentColor"/>
+                        <path d="M12 8.5v5.2M12 17.2h.01" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <strong class="dashboard-stat-value">{{ map_counts.risky }}</strong>
+            </div>
+            <div class="dashboard-stat-copy">
+                <span>High risk</span>
+            </div>
+        </article>
+        <article class="dashboard-stat-card stat-info">
+            <div class="dashboard-stat-top">
+                <div class="dashboard-stat-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6.5 9 4l6 2.3L20 4v13.5L15 20l-6-2.3L4 20Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M9 4v13.7M15 6.3V20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <strong class="dashboard-stat-value">{{ map_counts.total }}</strong>
+            </div>
+            <div class="dashboard-stat-copy">
+                <span>Total reports</span>
+            </div>
+        </article>
+    </section>
+
+    <div class="app-grid-two safety-map-layout">
+        <article class="dashboard-card app-info-card safety-map-card">
+            <div class="app-info-card-head">
+                <div>
+                    <h2>Live Incident Map</h2>
+                    <span class="map-status map-status-idle" id="safety-map-status">Checking your location...</span>
+                </div>
+                <button type="button" class="app-inline-button" id="safety-map-locate">Locate Me</button>
+            </div>
+
+            <div class="route-map-surface app-tall-map live-map-shell safety-map-shell">
+                <div id="safety-map-canvas" aria-label="Safety incident map"></div>
+            </div>
+
+            <div class="route-map-legend">
+                <span><i class="legend-green"></i>Low concern</span>
+                <span><i class="legend-orange"></i>Use caution</span>
+                <span><i class="legend-red"></i>High risk</span>
+            </div>
+        </article>
+
+        <article class="dashboard-card app-list-card safety-map-feed-card">
+            <div class="dashboard-card-head">
+                <h2>Reported Incidents</h2>
+                <a href="{% url 'community_reports' %}">Open feed</a>
+            </div>
+
+            <div class="app-feed-list safety-map-feed-list">
+                {% for report in reports %}
+                    <button
+                        type="button"
+                        class="app-feed-card safety-map-feed-item"
+                        data-report-index="{{ forloop.counter0 }}"
+                    >
+                        <div class="app-feed-head">
+                            <div>
+                                <strong>{{ report.title }}</strong>
+                                <small>{{ report.location }} · {{ report.time }}</small>
+                            </div>
+                            <span class="route-risk-tag {{ report.severity_key }}">{{ report.severity_label }}</span>
+                        </div>
+                        <p>{{ report.description }}</p>
+                    </button>
+                {% empty %}
+                    <div class="app-feed-card">
+                        <strong>No incidents yet</strong>
+                        <p>Reported safety issues will appear here and on the map as soon as they are submitted.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </article>
+    </div>
+
+    {{ reports|json_script:"safety-map-reports" }}
+{% endblock %}
+
+{% block extra_scripts %}
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+    <script>
+        (() => {
+            const mapNode = document.getElementById("safety-map-canvas");
+            const statusNode = document.getElementById("safety-map-status");
+            const reportDataNode = document.getElementById("safety-map-reports");
+            const locateButton = document.getElementById("safety-map-locate");
+
+            if (!mapNode || !reportDataNode || typeof L === "undefined") {
+                return;
+            }
+
+            const reports = JSON.parse(reportDataNode.textContent);
+            const defaultCenter = [-28.7383, 24.7634];
+            const map = L.map(mapNode, {
+                zoomControl: true,
+                attributionControl: false,
+            }).setView(defaultCenter, 13);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+            }).addTo(map);
+
+            const severityStyles = {
+                safe: { color: "#149347", label: "Low concern" },
+                moderate: { color: "#f59e0b", label: "Use caution" },
+                risky: { color: "#ef4444", label: "High risk" },
+            };
+
+            const fallbackLocations = {
+                "du toitspan road": [-28.7392, 24.7671],
+                "memorial road": [-28.7348, 24.7563],
+                "galeshewe": [-28.7579, 24.7312],
+                "sol plaatje university": [-28.7448, 24.7598],
+                "kimberley cbd": [-28.7419, 24.7632],
+                "new park": [-28.7255, 24.7488],
+                "royldene": [-28.7601, 24.7915],
+            };
+
+            const markerLayer = L.featureGroup().addTo(map);
+            const reportButtons = Array.from(document.querySelectorAll(".safety-map-feed-item"));
+            const markerByIndex = new Map();
+            let liveLocationMarker = null;
+            let liveLocationRadius = null;
+
+            function setStatus(message, tone = "idle") {
+                statusNode.textContent = message;
+                statusNode.className = `map-status map-status-${tone}`;
+            }
+
+            function normalizeLocation(value) {
+                return (value || "").trim().toLowerCase();
+            }
+
+            function approximateLocation(index, baseCenter = defaultCenter) {
+                const [lat, lng] = baseCenter;
+                const offsets = [
+                    [0.0042, -0.0068],
+                    [0.0025, 0.0059],
+                    [-0.0038, 0.0042],
+                    [-0.0054, -0.0048],
+                    [0.0061, 0.0018],
+                    [-0.0017, -0.0072],
+                ];
+                const [latOffset, lngOffset] = offsets[index % offsets.length];
+                const ringShift = Math.floor(index / offsets.length) * 0.0015;
+                return [lat + latOffset + ringShift, lng + lngOffset - ringShift];
+            }
+
+            function lookupFallbackLocation(location) {
+                const normalized = normalizeLocation(location);
+                for (const [key, coords] of Object.entries(fallbackLocations)) {
+                    if (normalized.includes(key)) {
+                        return coords;
+                    }
+                }
+                return null;
+            }
+
+            async function geocodeLocation(location, index) {
+                const fallback = lookupFallbackLocation(location);
+                if (fallback) {
+                    return fallback;
+                }
+
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(location)}`,
+                    {
+                        headers: { "Accept": "application/json" },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Location search failed.");
+                }
+
+                const results = await response.json();
+                if (!results.length) {
+                    return approximateLocation(index);
+                }
+
+                return [Number(results[0].lat), Number(results[0].lon)];
+            }
+
+            function popupMarkup(report) {
+                return `
+                    <strong>${report.title}</strong><br>
+                    <span>${report.location}</span><br>
+                    <small>${report.time}</small>
+                    <p style="margin:8px 0 0;">${report.description}</p>
+                `;
+            }
+
+            async function addReportMarkers() {
+                for (const [index, report] of reports.entries()) {
+                    try {
+                        const coords = await geocodeLocation(report.location, index);
+                        const style = severityStyles[report.severity_key] || severityStyles.safe;
+                        const marker = L.circleMarker(coords, {
+                            radius: 8,
+                            color: style.color,
+                            weight: 4,
+                            fillColor: "#ffffff",
+                            fillOpacity: 1,
+                        }).addTo(markerLayer);
+
+                        marker.bindPopup(popupMarkup(report));
+                        markerByIndex.set(index, marker);
+                    } catch (error) {
+                        const fallbackCoords = approximateLocation(index);
+                        const style = severityStyles[report.severity_key] || severityStyles.safe;
+                        const marker = L.circleMarker(fallbackCoords, {
+                            radius: 8,
+                            color: style.color,
+                            weight: 4,
+                            fillColor: "#ffffff",
+                            fillOpacity: 1,
+                        }).addTo(markerLayer);
+
+                        marker.bindPopup(popupMarkup(report));
+                        markerByIndex.set(index, marker);
+                    }
+                }
+            }
+
+            function bindReportList() {
+                reportButtons.forEach((button) => {
+                    button.addEventListener("click", () => {
+                        const marker = markerByIndex.get(Number(button.dataset.reportIndex));
+                        if (!marker) {
+                            return;
+                        }
+
+                        map.setView(marker.getLatLng(), 15);
+                        marker.openPopup();
+                    });
+                });
+            }
+
+            function clearLiveLocation() {
+                if (liveLocationMarker) {
+                    markerLayer.removeLayer(liveLocationMarker);
+                    liveLocationMarker = null;
+                }
+                if (liveLocationRadius) {
+                    markerLayer.removeLayer(liveLocationRadius);
+                    liveLocationRadius = null;
+                }
+            }
+
+            function addLiveLocation({ centerMap = false, userTriggered = false } = {}) {
+                if (!navigator.geolocation) {
+                    setStatus("Showing reported areas. Live location is not supported here.", "idle");
+                    return Promise.resolve();
+                }
+
+                setStatus(userTriggered ? "Locating you precisely..." : "Checking your live location...", "loading");
+
+                return new Promise((resolve) => {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const center = [position.coords.latitude, position.coords.longitude];
+                            clearLiveLocation();
+
+                            liveLocationMarker = L.circleMarker(center, {
+                                radius: 8,
+                                color: "#2563eb",
+                                weight: 4,
+                                fillColor: "#ffffff",
+                                fillOpacity: 1,
+                            }).addTo(markerLayer).bindPopup("Your current location");
+
+                            liveLocationRadius = L.circle(center, {
+                                radius: 260,
+                                color: "#2563eb",
+                                weight: 1.5,
+                                fillColor: "#93c5fd",
+                                fillOpacity: 0.12,
+                            }).addTo(markerLayer);
+
+                            if (centerMap) {
+                                map.setView(center, 15);
+                                liveLocationMarker.openPopup();
+                            }
+
+                            setStatus("Live location added to the safety map.", "success");
+                            resolve();
+                        },
+                        () => {
+                            setStatus(
+                                userTriggered
+                                    ? "Location access was not granted. We kept the report markers visible."
+                                    : "Showing reported areas. Location access was not granted.",
+                                userTriggered ? "error" : "idle"
+                            );
+                            resolve();
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                        }
+                    );
+                });
+            }
+
+            async function init() {
+                await addReportMarkers();
+                bindReportList();
+                await addLiveLocation();
+
+                if (markerLayer.getLayers().length) {
+                    map.fitBounds(markerLayer.getBounds(), { padding: [24, 24] });
+                } else {
+                    map.setView(defaultCenter, 13);
+                    setStatus("No reports yet. New incidents will appear here.", "idle");
+                }
+            }
+
+            if (locateButton) {
+                locateButton.addEventListener("click", () => {
+                    addLiveLocation({ centerMap: true, userTriggered: true });
+                });
+            }
+
+            init();
+        })();
+    </script>
+{% endblock %}

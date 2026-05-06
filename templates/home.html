@@ -1,0 +1,202 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeRoute Connect</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="landing-shell">
+        <header class="landing-header" id="home">
+            <a href="/" class="landing-brand">
+                <span class="landing-brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 96 108" role="img" focusable="false">
+                        <path d="M48 6 82 18v28c0 27-18 42-34 54C32 88 14 73 14 46V18L48 6Z" fill="#fff" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/>
+                        <path d="M48 30c-7.2 0-13 5.7-13 12.7 0 9.1 13 21.1 13 21.1s13-12 13-21.1C61 35.7 55.2 30 48 30Z" fill="currentColor"/>
+                        <circle cx="48" cy="43" r="5" fill="#fff"/>
+                    </svg>
+                </span>
+                <span class="landing-brand-copy">
+                    <strong><span>SafeRoute</span> Connect</strong>
+                    <small>Community Safety Reporting System</small>
+                </span>
+            </a>
+
+            <nav class="landing-nav" aria-label="Primary navigation">
+                <a href="#home" class="is-active">Home</a>
+                <a href="#features">Features</a>
+                <a href="#preview">Preview</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </header>
+
+        <main class="landing-main">
+            <section class="landing-hero landing-panel" id="about">
+                <div class="landing-copy">
+                    <span class="landing-kicker">Smart safety navigation for communities</span>
+                    <h1>Find safer routes with live community insight.</h1>
+                    <p class="landing-description">
+                        SafeRoute Connect helps people avoid high-risk areas, report incidents,
+                        and make better route decisions using shared local safety information.
+                    </p>
+
+                    <div class="landing-actions">
+                        <a href="/accounts/login/" class="landing-btn landing-btn-primary">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="2.1"/>
+                                <path d="M5 19c.8-3 3.5-4.8 7-4.8S18.2 16 19 19" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                            </svg>
+                            <span>Login</span>
+                        </a>
+
+                        <a href="/accounts/signup/" class="landing-btn landing-btn-secondary">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="2.1"/>
+                                <path d="M2.5 19c.8-3 3.4-4.8 6.5-4.8" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                                <path d="M16 7v6M13 10h6" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                            </svg>
+                            <span>Register</span>
+                        </a>
+                    </div>
+
+                    <div class="landing-guest-row">
+                        <span></span>
+                        <p>or</p>
+                        <span></span>
+                    </div>
+
+                    <a href="/routes/" class="landing-guest-btn">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2.5C7.1 2.5 3.2 6.3 3.2 11c0 6 8.8 10.5 8.8 10.5S20.8 17 20.8 11c0-4.7-3.9-8.5-8.8-8.5Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="12" cy="11" r="2.8" fill="none" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <span>Explore Safe Routes as Guest</span>
+                    </a>
+
+                    <div class="landing-stat-strip">
+                        <article>
+                            <strong>12+</strong>
+                            <span>Safe routes identified</span>
+                        </article>
+                        <article>
+                            <strong>8</strong>
+                            <span>Community reports today</span>
+                        </article>
+                        <article>
+                            <strong>3</strong>
+                            <span>Active alerts nearby</span>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="landing-visual" id="preview">
+                    <div class="landing-glow glow-one"></div>
+                    <div class="landing-glow glow-two"></div>
+
+                    <article class="landing-map-card">
+                        <img
+                            class="landing-map-image"
+                            src="{% static 'img/landing-map-kimberley.png' %}"
+                            alt="Kimberley safe route preview map"
+                        >
+                    </article>
+
+                    <div class="landing-mini-cards">
+                        <article class="landing-mini-card safe-card">
+                            <div class="mini-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 2.5 19 5v5.8c0 5.5-3.6 8.6-7 10.7-3.4-2.1-7-5.2-7-10.7V5l7-2.5Z" fill="currentColor"/>
+                                    <path d="m8.5 12.5 2.2 2.2 4.8-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <strong>Safer decisions</strong>
+                                <span>Route safety scoring</span>
+                            </div>
+                        </article>
+
+                        <article class="landing-mini-card alert-card">
+                            <div class="mini-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 20.3c1.6 0 2.8-1.2 2.8-2.8H9.2c0 1.6 1.2 2.8 2.8 2.8Zm6-4.2H6.1l1.4-1.9v-4c0-2.7 1.7-5 4.3-5.7V3.4a.9.9 0 1 1 1.8 0v1.1c2.5.7 4.3 3 4.3 5.7v4l1.1 1.9Z" fill="currentColor"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <strong>Live alerts</strong>
+                                <span>Incident awareness nearby</span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="landing-panel landing-feature-panel" id="features">
+                <div class="landing-section-head">
+                    <div>
+                        <span class="landing-kicker">Why it works</span>
+                        <h2>Safer decisions start with better route awareness.</h2>
+                    </div>
+                </div>
+
+                <div class="landing-feature-grid">
+                    <article class="landing-feature-card">
+                        <div class="landing-feature-icon feature-green">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 2.5 19 5v5.8c0 5.5-3.6 8.6-7 10.7-3.4-2.1-7-5.2-7-10.7V5l7-2.5Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                                <path d="m8.5 12.5 2.2 2.2 4.8-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h2>Safety First</h2>
+                        <p>Route choices are guided by safety status instead of distance alone.</p>
+                    </article>
+
+                    <article class="landing-feature-card">
+                        <div class="landing-feature-icon feature-blue">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="8" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                                <circle cx="16.5" cy="10.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M4 19c.7-2.8 3.3-4.7 6.2-4.7s5.4 1.9 6.1 4.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h2>Community Driven</h2>
+                        <p>People help one another by reporting incidents and suspicious activity.</p>
+                    </article>
+
+                    <article class="landing-feature-card">
+                        <div class="landing-feature-icon feature-orange">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 3 2.8 20h18.4L12 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                <path d="M12 8.5v5.2M12 17.2h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h2>Real-time Alerts</h2>
+                        <p>See current warnings and respond to risks before they affect your trip.</p>
+                    </article>
+
+                    <article class="landing-feature-card">
+                        <div class="landing-feature-icon feature-purple">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="5.5" y="10" width="13" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M8.4 10V7.8a3.6 3.6 0 1 1 7.2 0V10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h2>Private and Secure</h2>
+                        <p>Your profile and route interactions stay protected inside the platform.</p>
+                    </article>
+                </div>
+            </section>
+
+            <footer class="landing-footer-panel" id="contact">
+                <div>
+                    <strong>SafeRoute Connect</strong>
+                    <span>Community Safety Reporting System</span>
+                </div>
+                <p>Helping communities find safer routes and stay informed.</p>
+                <a href="/accounts/login/">Enter the platform</a>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+
+{% block page_actions %}
+    <a href="{% url 'find_route' %}" class="app-inline-button app-inline-button-primary">Plan new route</a>
+{% endblock %}
+
+{% block page_content %}
+    <div class="app-grid-two">
+        <article class="dashboard-card app-list-card">
+            <div class="dashboard-card-head">
+                <h2>Route History</h2>
+                <a href="{% url 'find_route' %}">Plan another</a>
+            </div>
+            <div class="recent-route-list">
+                {% for route in route_history %}
+                    <div class="recent-route-item">
+                        <span class="recent-route-icon {{ route.risk_key }}"></span>
+                        <div class="recent-route-copy">
+                            <strong>{{ route.from }} -> {{ route.to }}</strong>
+                            <small>{{ route.timestamp }}</small>
+                        </div>
+                        <span class="route-risk-tag {{ route.risk_key }}">{{ route.risk_label }}</span>
+                        <span class="route-item-chevron" aria-hidden="true"></span>
+                    </div>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="dashboard-card app-list-card">
+            <div class="dashboard-card-head">
+                <h2>Favorite Patterns</h2>
+                <a href="{% url 'routes' %}">Back to dashboard</a>
+            </div>
+            <div class="app-simple-list">
+                {% for favorite in favorite_routes %}
+                    <div class="app-simple-row">
+                        <div>
+                            <strong>{{ favorite.label }}</strong>
+                            <small>{{ favorite.detail }}</small>
+                        </div>
+                        <span class="route-risk-tag {{ favorite.risk_key }}">{{ favorite.risk_key|title }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </article>
+    </div>
+{% endblock %}

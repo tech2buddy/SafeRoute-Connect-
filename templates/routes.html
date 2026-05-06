@@ -1,0 +1,317 @@
+{% extends "app_base.html" %}
+
+{% block extra_head %}
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
+{% endblock %}
+
+{% block page_actions %}
+    <a href="{% url 'find_route' %}" class="app-inline-button app-inline-button-primary">Plan a route</a>
+{% endblock %}
+
+{% block page_content %}
+    <div class="dashboard-content-grid">
+        <section class="dashboard-content">
+            <section class="dashboard-stats">
+                {% for stat in stats %}
+                    <article class="dashboard-stat-card stat-{{ stat.style }}">
+                        <div class="dashboard-stat-top">
+                            <div class="dashboard-stat-icon">
+                                {% if stat.style == "safe" %}
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 2.5 19 5v5.8c0 5.5-3.6 8.6-7 10.7-3.4-2.1-7-5.2-7-10.7V5l7-2.5Z" fill="currentColor"/>
+                                        <path d="m8.5 12.5 2.2 2.2 4.8-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                {% elif stat.style == "warning" %}
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 3 2.8 20h18.4L12 3Z" fill="currentColor"/>
+                                        <path d="M12 8.5v5.2M12 17.2h.01" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                {% elif stat.style == "info" %}
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <circle cx="8" cy="9" r="3" fill="currentColor"/>
+                                        <circle cx="16.5" cy="10.5" r="2.6" fill="currentColor"/>
+                                        <path d="M4 19c.7-2.8 3.3-4.7 6.2-4.7s5.4 1.9 6.1 4.7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                {% else %}
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 20.3c1.6 0 2.8-1.2 2.8-2.8H9.2c0 1.6 1.2 2.8 2.8 2.8Zm6-4.2H6.1l1.4-1.9v-4c0-2.7 1.7-5 4.3-5.7V3.4a.9.9 0 1 1 1.8 0v1.1c2.5.7 4.3 3 4.3 5.7v4l1.1 1.9Z" fill="currentColor"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+                            <strong class="dashboard-stat-value">{{ stat.value }}</strong>
+                        </div>
+                        <div class="dashboard-stat-copy">
+                            <span>{{ stat.label }}</span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </section>
+
+            <section class="dashboard-route-row">
+                <article class="dashboard-card route-finder-card">
+                    <h2>Route Snapshot</h2>
+                    <div class="route-input-stack route-input-stack-single">
+                        <div class="route-input-card">
+                            <span class="route-dot dot-green"></span>
+                            <div>
+                                <small>Recommended start</small>
+                                <strong>Sol Plaatje University</strong>
+                            </div>
+                        </div>
+                        <div class="route-input-card">
+                            <span class="route-dot dot-red"></span>
+                            <div>
+                                <small>Suggested destination</small>
+                                <strong>Kimberley CBD</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'find_route' %}" class="route-find-button">
+                        <span>Open Route Planner</span>
+                        <span class="route-arrow" aria-hidden="true"></span>
+                    </a>
+                </article>
+
+                <article class="dashboard-card route-map-card">
+                    <div class="route-map-surface live-map-shell dashboard-route-live-shell">
+                        <div id="dashboard-route-map" aria-label="Live dashboard route map"></div>
+                    </div>
+
+                    <div class="route-map-legend">
+                        <span><i class="legend-green"></i>Safe</span>
+                        <span><i class="legend-orange"></i>Moderate</span>
+                        <span><i class="legend-red"></i>Risky</span>
+                    </div>
+                </article>
+            </section>
+
+            <section class="dashboard-bottom-row">
+                <article class="dashboard-card recent-routes-card">
+                    <div class="dashboard-card-head">
+                        <h2>Recent Routes</h2>
+                        <a href="{% url 'my_routes' %}">View all</a>
+                    </div>
+
+                    <div class="recent-route-list">
+                        {% for route in recent_routes %}
+                            <div class="recent-route-item">
+                                <span class="recent-route-icon {{ route.risk_key }}">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 2.5C7.1 2.5 3.2 6.3 3.2 11c0 6 8.8 10.5 8.8 10.5S20.8 17 20.8 11c0-4.7-3.9-8.5-8.8-8.5Z" fill="currentColor"/>
+                                        <circle cx="12" cy="11" r="3" fill="#fff"/>
+                                    </svg>
+                                </span>
+                                <div class="recent-route-copy">
+                                    <strong>{{ route.from }} -> {{ route.to }}</strong>
+                                    <small>{{ route.timestamp }}</small>
+                                </div>
+                                <span class="route-risk-tag {{ route.risk_key }}">{{ route.risk_label }}</span>
+                                <span class="route-item-chevron" aria-hidden="true"></span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="dashboard-card recent-reports-card">
+                    <div class="dashboard-card-head">
+                        <h2>Recent Reports</h2>
+                        <a href="{% url 'community_reports' %}">View all</a>
+                    </div>
+
+                    <div class="report-list">
+                        {% for report in recent_reports %}
+                            <div class="report-item">
+                                <span class="report-icon report-{{ report.severity_key }}">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 3 2.8 20h18.4L12 3Z" fill="currentColor"/>
+                                        <path d="M12 8.5v5.2M12 17.2h.01" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
+                                <div class="report-copy">
+                                    <strong>{{ report.title }}</strong>
+                                    <small>{{ report.location }}</small>
+                                </div>
+                                <span class="report-time">{{ report.time }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <a href="{% url 'report_incident' %}" class="report-new-button">
+                        <span>Report New Incident</span>
+                        <span class="report-plus" aria-hidden="true">+</span>
+                    </a>
+                </article>
+            </section>
+        </section>
+
+        <aside class="dashboard-side-panel">
+            <article class="dashboard-card quick-actions-card">
+                <h2>Quick Actions</h2>
+                {% for action in quick_actions %}
+                    <a href="{% url action.href %}" class="quick-action-item">
+                        <span class="quick-action-icon {{ action.color }}">
+                            {% if action.href == "find_route" %}
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M6 18c1.2 0 2-1 2-2.1 0-.5-.2-1-.5-1.4l3.2-4.1c.4.2.8.3 1.3.3.3 0 .6 0 .9-.1l1.8 2.3c-.2.4-.3.8-.3 1.3 0 1.2.9 2.1 2.1 2.1s2.1-.9 2.1-2.1-.9-2.1-2.1-2.1c-.3 0-.6.1-.8.2l-1.9-2.4c.3-.4.4-.8.4-1.3 0-1.2-.9-2.1-2.1-2.1S10 7.6 10 8.8c0 .4.1.8.3 1.1L7 14c-.3-.1-.6-.2-1-.2-1.2 0-2.1.9-2.1 2.1S4.8 18 6 18Z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
+                                </svg>
+                            {% elif action.href == "report_incident" %}
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 3 2.8 20h18.4L12 3Z" fill="#fff"/>
+                                    <path d="M12 8.5v5.2M12 17.2h.01" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            {% elif action.href == "alerts" %}
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 20.3c1.6 0 2.8-1.2 2.8-2.8H9.2c0 1.6 1.2 2.8 2.8 2.8Zm6-4.2H6.1l1.4-1.9v-4c0-2.7 1.7-5 4.3-5.7V3.4a.9.9 0 1 1 1.8 0v1.1c2.5.7 4.3 3 4.3 5.7v4l1.1 1.9Z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
+                                </svg>
+                            {% else %}
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="8" cy="9" r="3" fill="none" stroke="#fff" stroke-width="1.8"/>
+                                    <circle cx="16.5" cy="10.5" r="2.4" fill="none" stroke="#fff" stroke-width="1.8"/>
+                                    <path d="M4 19c.7-2.8 3.3-4.7 6.2-4.7s5.4 1.9 6.1 4.7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                            {% endif %}
+                        </span>
+                        <span class="quick-action-copy">
+                            <strong>{{ action.title }}</strong>
+                            <small>{{ action.body }}</small>
+                        </span>
+                        <span class="quick-action-chevron" aria-hidden="true"></span>
+                    </a>
+                {% endfor %}
+            </article>
+        </aside>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+    <script>
+        (() => {
+            const mapNode = document.getElementById("dashboard-route-map");
+
+            if (!mapNode || typeof L === "undefined") {
+                return;
+            }
+
+            const defaultCenter = [-28.7381, 24.7638];
+            const map = L.map(mapNode, {
+                zoomControl: false,
+                scrollWheelZoom: false,
+                attributionControl: false,
+            }).setView(defaultCenter, 13);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+            }).addTo(map);
+
+            const previewGroup = L.featureGroup().addTo(map);
+
+            function clearPreview() {
+                previewGroup.clearLayers();
+            }
+
+            function buildPreview(center) {
+                const [lat, lng] = center;
+                return {
+                    saferRoute: [
+                        [lat - 0.0042, lng - 0.0115],
+                        [lat - 0.0018, lng - 0.006],
+                        [lat, lng],
+                    ],
+                    cautionRoute: [
+                        [lat, lng],
+                        [lat + 0.0021, lng + 0.0048],
+                    ],
+                    riskRoute: [
+                        [lat + 0.0021, lng + 0.0048],
+                        [lat + 0.0054, lng + 0.0098],
+                    ],
+                };
+            }
+
+            function renderPreview(center, isLive = false) {
+                clearPreview();
+
+                const { saferRoute, cautionRoute, riskRoute } = buildPreview(center);
+
+                [
+                    [saferRoute, "#149347"],
+                    [cautionRoute, "#f59e0b"],
+                    [riskRoute, "#ef4444"],
+                ].forEach(([points, color]) => {
+                    L.polyline(points, {
+                        color,
+                        weight: 6,
+                        lineCap: "round",
+                        lineJoin: "round",
+                    }).addTo(previewGroup);
+                });
+
+                [
+                    { coords: saferRoute[0], color: "#149347", label: "Safer area nearby" },
+                    { coords: cautionRoute[1], color: "#f59e0b", label: "Use caution nearby" },
+                    { coords: riskRoute[1], color: "#ef4444", label: "Risk marker nearby" },
+                ].forEach(({ coords, color, label }) => {
+                    L.circleMarker(coords, {
+                        radius: 7,
+                        color,
+                        weight: 3,
+                        fillColor: "#ffffff",
+                        fillOpacity: 1,
+                    }).addTo(previewGroup).bindPopup(label);
+                });
+
+                if (isLive) {
+                    L.circleMarker(center, {
+                        radius: 8,
+                        color: "#2563eb",
+                        weight: 4,
+                        fillColor: "#ffffff",
+                        fillOpacity: 1,
+                    }).addTo(previewGroup).bindPopup("Your current location");
+
+                    L.circle(center, {
+                        radius: 220,
+                        color: "#2563eb",
+                        weight: 1.5,
+                        fillColor: "#93c5fd",
+                        fillOpacity: 0.12,
+                    }).addTo(previewGroup);
+                }
+
+                map.fitBounds(previewGroup.getBounds(), { padding: [18, 18] });
+            }
+
+            function useLiveLocation() {
+                if (!navigator.geolocation) {
+                    renderPreview(defaultCenter, false);
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        renderPreview([position.coords.latitude, position.coords.longitude], true);
+                    },
+                    () => {
+                        renderPreview(defaultCenter, false);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                    }
+                );
+            }
+
+            useLiveLocation();
+        })();
+    </script>
+{% endblock %}

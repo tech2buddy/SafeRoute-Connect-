@@ -1,0 +1,58 @@
+{% extends "app_base.html" %}
+
+{% block page_actions %}
+    {% if request.user.is_authenticated %}
+        <a href="{% url 'settings' %}" class="app-inline-button">Open settings</a>
+    {% else %}
+        <a href="{% url 'login' %}" class="app-inline-button app-inline-button-primary">Login to personalize</a>
+    {% endif %}
+{% endblock %}
+
+{% block page_content %}
+    <div class="app-grid-two">
+        <article class="dashboard-card app-list-card">
+            <div class="app-profile-hero">
+                <div class="app-profile-avatar">SR</div>
+                <div>
+                    <h2>{% if request.user.is_authenticated %}{{ request.user.username }}{% else %}Guest Explorer{% endif %}</h2>
+                    <p>{% if request.user.is_authenticated %}Signed in and ready to personalize the experience.{% else %}Browse the prototype freely or sign in to save preferences and update details.{% endif %}</p>
+                </div>
+            </div>
+            <div class="app-summary-grid">
+                <div>
+                    <small>Routes seen</small>
+                    <strong>{{ route_count }}</strong>
+                </div>
+                <div>
+                    <small>Reports visible</small>
+                    <strong>{{ report_count }}</strong>
+                </div>
+            </div>
+        </article>
+
+        <article class="dashboard-card app-form-card">
+            <h2>Profile Details</h2>
+            {% if request.user.is_authenticated %}
+                <form method="post" class="app-form">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% for error in field.errors %}
+                                <p class="field-error">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="route-find-button route-find-button-submit">
+                        <span>Save Profile</span>
+                        <span class="route-arrow" aria-hidden="true"></span>
+                    </button>
+                </form>
+            {% else %}
+                <p class="app-card-copy">You are viewing the guest version of the profile page. Sign in to edit your name, email, and personal account details.</p>
+                <a href="{% url 'login' %}" class="route-find-button">Go to Login</a>
+            {% endif %}
+        </article>
+    </div>
+{% endblock %}

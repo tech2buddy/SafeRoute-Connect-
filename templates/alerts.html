@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+
+{% block page_content %}
+    <section class="dashboard-stats app-alert-stat-grid">
+        <article class="dashboard-stat-card stat-safe">
+            <div class="dashboard-stat-icon"></div>
+            <div class="dashboard-stat-copy">
+                <strong>{{ alert_counts.safe }}</strong>
+                <span>Low concern alerts</span>
+            </div>
+        </article>
+        <article class="dashboard-stat-card stat-warning">
+            <div class="dashboard-stat-icon"></div>
+            <div class="dashboard-stat-copy">
+                <strong>{{ alert_counts.moderate }}</strong>
+                <span>Caution areas</span>
+            </div>
+        </article>
+        <article class="dashboard-stat-card stat-purple">
+            <div class="dashboard-stat-icon"></div>
+            <div class="dashboard-stat-copy">
+                <strong>{{ alert_counts.risky }}</strong>
+                <span>High priority alerts</span>
+            </div>
+        </article>
+    </section>
+
+    <article class="dashboard-card app-list-card">
+        <div class="dashboard-card-head">
+            <h2>Alert Feed</h2>
+            <a href="{% url 'report_incident' %}">Report issue</a>
+        </div>
+        <div class="app-alert-list">
+            {% for alert in alerts %}
+                <div class="app-alert-row">
+                    <span class="report-icon report-{{ alert.severity_key }}"></span>
+                    <div>
+                        <strong>{{ alert.title }}</strong>
+                        <small>{{ alert.location }} · {{ alert.time }}</small>
+                        <p>{{ alert.body }}</p>
+                    </div>
+                    <span class="route-risk-tag {{ alert.severity_key }}">{{ alert.severity_label }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </article>
+{% endblock %}
