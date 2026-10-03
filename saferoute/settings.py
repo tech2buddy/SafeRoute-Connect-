@@ -7,7 +7,11 @@ SECRET_KEY = "django-insecure-saferoute-connect-demo-key"
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "safe-route-connect.vercel.app",
+]
 
 
 INSTALLED_APPS = [
