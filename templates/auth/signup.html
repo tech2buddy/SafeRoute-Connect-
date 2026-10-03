@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page_title }} | SafeRoute Connect</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -40,7 +42,7 @@
             <section class="auth-card">
                 <p class="auth-kicker">Create account</p>
                 <h1 class="auth-title">Join SafeRoute Connect</h1>
-                <p class="auth-copy">Register once and we'll link you straight into the safer-route experience.</p>
+                <p class="auth-copy">Create your account to save routes and share safety concerns with your community.</p>
 
                 {% if messages %}
                     <div class="message-stack">
@@ -109,12 +111,12 @@
 
                 <div class="auth-preview-grid">
                     <article class="auth-preview-card">
-                        <strong>8</strong>
-                        <span>community reports helping improve awareness</span>
+                        <strong>Share what matters</strong>
+                        <span>Report incidents to help others stay aware.</span>
                     </article>
                     <article class="auth-preview-card">
-                        <strong>4</strong>
-                        <span>core safety tools ready after sign in</span>
+                        <strong>Your routes, together</strong>
+                        <span>Keep your saved journeys in one place.</span>
                     </article>
                 </div>
 
@@ -148,12 +150,14 @@
             const defaultCenter = [-28.7383, 24.7634];
             const map = L.map(mapNode, {
                 zoomControl: false,
-                attributionControl: false,
+                attributionControl: true,
             }).setView(defaultCenter, 13);
 
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             }).addTo(map);
+            map.attributionControl.setPrefix(false);
 
             const previewGroup = L.featureGroup().addTo(map);
 

@@ -149,6 +149,8 @@
             let routeLine = null;
             let liveRadius = null;
             let liveStartPoint = null;
+            let locationMarker = null;
+            let locationWatch = null;
 
             const riskText = {
                 safest: {
@@ -176,11 +178,13 @@
             function initMap() {
                 map = L.map("live-route-map", {
                     zoomControl: true,
-                    attributionControl: false,
+                    attributionControl: true,
                 }).setView(defaultCenter, 13);
-                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
                     maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                 }).addTo(map);
+                map.attributionControl.setPrefix(false);
             }
 
             function getRoutingProfile() {
@@ -247,10 +251,6 @@
                     map.removeLayer(endMarker);
                     endMarker = null;
                 }
-                if (liveRadius) {
-                    map.removeLayer(liveRadius);
-                    liveRadius = null;
-                }
             }
 
             async function fetchRoute(startPoint, endPoint) {
@@ -304,32 +304,38 @@
             }
 
             function showLiveLocationOnly(startPoint, label) {
-                clearRoute();
-
-                startMarker = L.circleMarker([startPoint.lat, startPoint.lng], {
+                const firstFix = !locationMarker;
+                const point = [startPoint.lat, startPoint.lng];
+                if (locationMarker) map.removeLayer(locationMarker);
+                if (liveRadius) map.removeLayer(liveRadius);
+                locationMarker = L.circleMarker(point, {
                     radius: 8,
                     color: "#2563eb",
                     weight: 4,
                     fillColor: "#ffffff",
                     fillOpacity: 1,
                 }).addTo(map);
+                locationMarker.bindTooltip("You are here", { permanent: true, direction: "top" });
 
-                liveRadius = L.circle([startPoint.lat, startPoint.lng], {
-                    radius: 220,
+                liveRadius = L.circle(point, {
+                    radius: startPoint.accuracy,
                     color: "#2563eb",
                     weight: 1.5,
                     fillColor: "#93c5fd",
                     fillOpacity: 0.12,
                 }).addTo(map);
 
-                map.setView([startPoint.lat, startPoint.lng], 14);
+                map.invalidateSize();
+                if (firstFix || !routeLine) {
+                    map.fitBounds(liveRadius.getBounds(), { padding: [32, 32], maxZoom: 17 });
+                }
 
                 startSummary.textContent = label;
                 destinationSummary.textContent = destinationField.value.trim() || "Add a destination";
                 etaSummary.textContent = "--";
                 travelModeSummary.textContent = travelModeField.options[travelModeField.selectedIndex].text;
 
-                setStatus("Live location ready. Add a destination to preview the route.", "success");
+                setStatus(`Your location is shown in blue (accuracy approximately ${Math.round(startPoint.accuracy)} m).${startPoint.accuracy > 100 ? " Your device is providing an approximate location; enable precise location in device settings." : ""} Add a destination, then preview your route.`, "success");
             }
 
             async function previewRoute() {
@@ -395,43 +401,41 @@
 
                 setStatus(triggeredByUser ? "Requesting your live location..." : "Checking your live location...", "loading");
 
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
+                if (locationWatch !== null) navigator.geolocation.clearWatch(locationWatch);
+                locationWatch = navigator.geolocation.watchPosition(
+                    (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        liveStartPoint = { lat, lng };
-
-                        try {
-                            const label = await reverseGeocode(lat, lng);
-                            startField.value = label;
-                        } catch (error) {
-                            startField.value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                        }
-
+                        liveStartPoint = { lat, lng, accuracy: position.coords.accuracy };
+                        startField.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                         startField.dataset.source = "live";
-                        if (destinationField.value.trim()) {
-                            await previewRoute();
-                        } else {
-                            showLiveLocationOnly(liveStartPoint, startField.value);
-                        }
+                        showLiveLocationOnly(liveStartPoint, "Your current location");
                     },
-                    () => {
+                    (error) => {
                         if (fallbackPreview) {
                             setStatus("Using manual route preview. Live location was not available.", "idle");
                             previewRoute();
                         } else {
-                            setStatus("Location access was denied. You can still type the start point manually.", "error");
+                            const messages = {
+                                1: "Location permission was denied. Allow location for this site or enter a start point manually.",
+                                2: "Your device cannot determine its location. Check device location settings or enter a start point manually.",
+                                3: "Location lookup timed out. Try again outdoors or enter a start point manually.",
+                            };
+                            setStatus(messages[error.code] || "Location is unavailable.", "error");
                         }
                     },
                     {
                         enableHighAccuracy: true,
-                        timeout: 10000,
+                        timeout: 20000,
+                        maximumAge: 0,
                     }
                 );
             }
 
             startField.addEventListener("input", () => {
                 startField.dataset.source = "manual";
+                if (locationWatch !== null) navigator.geolocation.clearWatch(locationWatch);
+                locationWatch = null;
             });
 
             travelModeField.addEventListener("change", () => {
@@ -444,7 +448,10 @@
 
             initMap();
             updateRiskSummary();
-            useLiveLocation({ fallbackPreview: true, triggeredByUser: false });
+            setStatus("Use my location to show your position, or enter your starting point manually.");
+            window.addEventListener("pagehide", () => {
+                if (locationWatch !== null) navigator.geolocation.clearWatch(locationWatch);
+            });
         })();
     </script>
 {% endblock %}

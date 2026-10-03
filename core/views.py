@@ -205,6 +205,17 @@ def home(request):
     return render(request, "home.html")
 
 
+def public_page_view(request, page):
+    form = SupportMessageForm(request.POST or None) if page == "contact" else None
+    if request.method == "POST" and form and form.is_valid():
+        requests = request.session.get("contact_requests", [])
+        requests.append(form.cleaned_data)
+        request.session["contact_requests"] = requests[-10:]
+        messages.success(request, "Your message has been saved in this browser session. Email delivery is not yet available.")
+        return redirect("contact")
+    return render(request, "public_page.html", {"public_page": page, "form": form})
+
+
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("routes")

@@ -5,6 +5,7 @@ from .views import (
     community_reports_view,
     find_route_view,
     home,
+    public_page_view,
     login_view,
     logout_view,
     my_routes_view,
@@ -20,6 +21,9 @@ from .views import (
 
 urlpatterns = [
     path("", home, name="home"),
+    path("features/", public_page_view, {"page": "features"}, name="features"),
+    path("preview/", public_page_view, {"page": "preview"}, name="preview"),
+    path("contact/", public_page_view, {"page": "contact"}, name="contact"),
     path("accounts/login/", login_view, name="login"),
     path("accounts/signup/", signup_view, name="signup"),
     path("accounts/logout/", logout_view, name="logout"),

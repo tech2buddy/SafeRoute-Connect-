@@ -206,12 +206,14 @@
             const map = L.map(mapNode, {
                 zoomControl: false,
                 scrollWheelZoom: false,
-                attributionControl: false,
+                attributionControl: true,
             }).setView(defaultCenter, 13);
 
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             }).addTo(map);
+            map.attributionControl.setPrefix(false);
 
             const previewGroup = L.featureGroup().addTo(map);
 
@@ -242,6 +244,16 @@
                 clearPreview();
 
                 const { saferRoute, cautionRoute, riskRoute } = buildPreview(center);
+
+                // No safety overlays until real incident coordinates are available.
+                if (!isLive) {
+                    map.setView(center, 13);
+                    return;
+                }
+                L.circleMarker(center, { radius:8, color:'#2563eb', weight:3, fillColor:'#fff', fillOpacity:1 })
+                    .addTo(previewGroup).bindPopup('Your current location');
+                map.setView(center, 14);
+                return;
 
                 [
                     [saferRoute, "#149347"],

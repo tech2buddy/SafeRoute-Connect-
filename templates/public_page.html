@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ public_page|title }} | SafeRoute Connect</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
+</head>
+<body>
+<div class="landing-shell">
+    <header class="landing-header">
+        <a class="landing-brand" href="{% url 'home' %}"><span class="landing-brand-copy"><strong><span>SafeRoute</span> Connect</strong><small>Community Safety Reporting System</small></span></a>
+        <nav class="landing-nav" aria-label="Primary navigation">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'features' %}" {% if public_page == 'features' %}class="is-active" aria-current="page"{% endif %}>Features</a>
+            <a href="{% url 'preview' %}" {% if public_page == 'preview' %}class="is-active" aria-current="page"{% endif %}>Preview</a>
+            <a href="{% url 'contact' %}" {% if public_page == 'contact' %}class="is-active" aria-current="page"{% endif %}>Contact</a>
+        </nav>
+    </header>
+    <main class="public-content">
+        {% if public_page == 'features' %}
+        <div class="public-heading"><span class="landing-kicker">Move with awareness</span><h1>A clearer picture of your journey.</h1><p>Explore your surroundings, share local concerns, and stay connected to community reports.</p></div>
+        <div class="public-grid">
+            <article class="dashboard-card"><span class="landing-kicker">01 / Explore</span><h2>Find a route</h2><p>Enter your start and destination, or use your browser location to preview a route on an interactive map.</p><a href="{% url 'find_route' %}" class="app-inline-button app-inline-button-primary">Open route planner</a></article>
+            <article class="dashboard-card"><span class="landing-kicker">02 / Understand</span><h2>See reported incidents</h2><p>Explore incident markers and open reports for their location, description, and reported severity.</p><a href="{% url 'safety_map' %}" class="app-inline-button">Explore safety map</a></article>
+            <article class="dashboard-card"><span class="landing-kicker">03 / Contribute</span><h2>Share a safety concern</h2><p>Report poor lighting, hazards, or suspicious activity to add context to the community feed.</p><a href="{% url 'report_incident' %}" class="app-inline-button">Report an incident</a></article>
+            <article class="dashboard-card"><span class="landing-kicker">04 / Stay informed</span><h2>Review community updates</h2><p>Read recent reports and alerts before deciding how to travel. Route guidance does not guarantee safety.</p><a href="{% url 'community_reports' %}" class="app-inline-button">Read community reports</a></article>
+        </div>
+        {% elif public_page == 'preview' %}
+        <div class="public-heading"><span class="landing-kicker">Explore SafeRoute</span><h1>Your surroundings, in focus.</h1><p>Take a look at Kimberley, then open the interactive tools to explore a location of your choice.</p></div>
+        <article class="dashboard-card public-preview"><img src="{% static 'img/landing-map-kimberley.png' %}" alt="Illustrated Kimberley area map preview"><div><h2>Start exploring</h2><p>This image is an illustration. Open the safety map for interactive streets and report markers, or plan a route from your location.</p><div class="app-action-row"><a class="app-inline-button app-inline-button-primary" href="{% url 'safety_map' %}">Open safety map</a><a class="app-inline-button" href="{% url 'find_route' %}">Plan a route</a><a class="app-inline-button" href="{% url 'routes' %}">View dashboard</a></div></div></article>
+        {% else %}
+        <div class="public-heading"><span class="landing-kicker">Get in touch</span><h1>How can we help?</h1><p>Ask about your account, route guidance, or using SafeRoute.</p></div>
+        <div class="public-grid">
+            <article class="dashboard-card"><h2>Leave a message</h2><p>Messages are currently saved in your browser session; they are not sent to a support team yet.</p>{% for message in messages %}<p role="status" class="dashboard-message">{{ message }}</p>{% endfor %}<form method="post" class="app-form">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="form-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}<button class="app-inline-button app-inline-button-primary" type="submit">Save message</button></form></article>
+            <article class="dashboard-card"><h2>Need help getting started?</h2><p>Read guidance on reporting incidents and using the route planner.</p><a href="{% url 'support' %}" class="app-inline-button">Help and support</a><h2>Reporting an incident?</h2><p>Use the incident form so the report appears in your SafeRoute feed. This contact form is not monitored for emergencies.</p><a href="{% url 'report_incident' %}" class="app-inline-button">Report an incident</a></article>
+        </div>
+        {% endif %}
+    </main>
+    <footer class="landing-footer-panel"><strong>SafeRoute Connect</strong><p>Helping communities find safer routes and stay informed.</p><a href="{% url 'home' %}">Back home</a></footer>
+</div>
+</body>
+</html>

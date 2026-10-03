@@ -7,6 +7,9 @@ SECRET_KEY = "django-insecure-saferoute-connect-demo-key"
 
 DEBUG = True
 
+# Send only our origin to cross-origin map tiles, as required by the provider.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",

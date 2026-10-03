@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page_title }} | SafeRoute Connect</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -93,12 +95,12 @@
 
                 <div class="auth-preview-grid">
                     <article class="auth-preview-card">
-                        <strong>12+</strong>
-                        <span>route suggestions available across the platform</span>
+                        <strong>Plan your journey</strong>
+                        <span>Explore the map and save your route searches.</span>
                     </article>
                     <article class="auth-preview-card">
-                        <strong>3</strong>
-                        <span>active alerts helping users stay aware</span>
+                        <strong>Stay informed</strong>
+                        <span>Check local reports before you head out.</span>
                     </article>
                 </div>
 
@@ -132,12 +134,14 @@
             const defaultCenter = [-28.7383, 24.7634];
             const map = L.map(mapNode, {
                 zoomControl: false,
-                attributionControl: false,
+                attributionControl: true,
             }).setView(defaultCenter, 13);
 
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             }).addTo(map);
+            map.attributionControl.setPrefix(false);
 
             const previewGroup = L.featureGroup().addTo(map);
 
