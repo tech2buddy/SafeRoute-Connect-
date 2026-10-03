@@ -7,6 +7,7 @@
     <title>{{ page_title }} | SafeRoute Connect</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
+    <link rel="stylesheet" href="{% static 'css/workspace-mobile.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -60,7 +61,8 @@
         </header>
 
         <div class="dashboard-layout">
-            <aside class="dashboard-sidebar">
+            <button class="workspace-menu-toggle" type="button" aria-expanded="false" aria-controls="workspace-navigation">Workspace menu <span aria-hidden="true">+</span></button>
+            <aside class="dashboard-sidebar" id="workspace-navigation">
                 <p class="workspace-nav-label">YOUR WORKSPACE</p>
                 <a href="{% url 'routes' %}" class="dashboard-nav-item {% if active_page == 'dashboard' %}is-active{% endif %}">
                     <span class="dashboard-nav-icon" aria-hidden="true">
@@ -181,6 +183,18 @@
             </main>
         </div>
     </div>
+    <script>
+        (() => {
+            const button = document.querySelector('.workspace-menu-toggle');
+            const navigation = document.getElementById('workspace-navigation');
+            button.addEventListener('click', () => {
+                const expanded = button.getAttribute('aria-expanded') !== 'true';
+                button.setAttribute('aria-expanded', String(expanded));
+                navigation.classList.toggle('mobile-menu-open', expanded);
+                button.querySelector('span').textContent = expanded ? '-' : '+';
+            });
+        })();
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
