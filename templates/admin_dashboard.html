@@ -1,0 +1,36 @@
+{% extends 'app_base.html' %}
+{% load static %}
+{% block workspace_navigation %}
+<p class="workspace-nav-label">ADMIN WORKSPACE</p>
+<a href="#admin-overview" id="admin-overview-link" class="dashboard-nav-item"><span class="admin-nav-index">01</span><span>Overview</span></a>
+<button type="button" class="dashboard-nav-item admin-side-nav" data-section="imports"><span class="admin-nav-index">02</span><span>AI reviews</span></button>
+<button type="button" class="dashboard-nav-item admin-side-nav" data-section="incidents"><span class="admin-nav-index">03</span><span>Incidents</span></button>
+<button type="button" class="dashboard-nav-item admin-side-nav" data-section="tickets"><span class="admin-nav-index">04</span><span>Support tickets</span></button>
+<button type="button" class="dashboard-nav-item admin-side-nav" data-section="users"><span class="admin-nav-index">05</span><span>Members</span></button>
+<button type="button" class="dashboard-nav-item admin-side-nav" data-section="audit"><span class="admin-nav-index">06</span><span>Audit log</span></button>
+<a href="{% url 'routes' %}" class="dashboard-nav-item admin-back-link"><span aria-hidden="true">&larr;</span><span>Back to website</span></a>
+{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/admin-workspace.css' %}?v=tickets-3">{% endblock %}
+{% block page_content %}
+<section class="admin-command"><div><span class="admin-eyebrow">SAFEROUTE / OPERATIONS</span><h2>Community control room<span>.</span></h2><p>Less noise. A clearer queue. Every decision accounted for.</p></div><span class="admin-access-pill">Restricted workspace</span></section>
+<p id="admin-status" role="status" aria-live="polite">Checking admin access...</p>
+<div id="admin-content" hidden>
+<div class="admin-totals" id="admin-totals"></div>
+<section id="admin-overview" class="admin-overview">
+<div class="admin-overview-heading"><span class="admin-eyebrow">WORKSPACE SNAPSHOT</span><h2>Your next decisions, at a glance.</h2><p>Live counts from the latest refresh. Select a queue to inspect its records.</p></div>
+<div class="admin-overview-grid">
+<article><span class="admin-eyebrow">REVIEW PRIORITY</span><h3 id="overview-pending">Loading discoveries...</h3><p>Check the source and relevance before deciding. Discoveries are not automatically published.</p><button type="button" class="app-inline-button" data-overview-section="imports">Open AI reviews</button></article>
+<article><span class="admin-eyebrow">MEMBER SUPPORT</span><h3 id="overview-tickets">Loading support requests...</h3><p>Read private tickets, update their status, and keep track of unresolved requests.</p><button type="button" class="app-inline-button" data-overview-section="tickets">Open support tickets</button></article>
+<article><span class="admin-eyebrow">COMMUNITY OVERSIGHT</span><h3 id="overview-incidents">Loading reports...</h3><p>Inspect community submissions and remove incorrect or inappropriate reports.</p><button type="button" class="app-inline-button" data-overview-section="incidents">Review incidents</button></article>
+</div><p class="admin-overview-footnote">Support summary covers the latest 50 loaded tickets. Refresh a queue to retrieve updated data.</p>
+</section>
+<section class="admin-desk" hidden>
+<div class="admin-desk-head"><div><span class="admin-eyebrow">REVIEW DESK</span><h2>Focus on what matters.</h2></div><button type="button" id="admin-refresh" class="app-inline-button">Refresh data</button></div>
+<div class="admin-tabs" role="tablist" aria-label="Admin sections"><button type="button" id="tab-imports" role="tab" aria-selected="true" aria-controls="admin-queue-panel" data-tab="imports">AI queue <span></span></button><button type="button" id="tab-incidents" role="tab" aria-selected="false" aria-controls="admin-queue-panel" data-tab="incidents" tabindex="-1">Incidents <span></span></button><button type="button" id="tab-users" role="tab" aria-selected="false" aria-controls="admin-queue-panel" data-tab="users" tabindex="-1">Members <span></span></button><button type="button" id="tab-audit" role="tab" aria-selected="false" aria-controls="admin-queue-panel" data-tab="audit" tabindex="-1">Audit log <span></span></button></div>
+<div class="admin-desk-body"><section id="admin-queue-panel" class="admin-queue-panel" role="tabpanel" aria-labelledby="tab-imports"><div class="admin-filter-bar"><label for="admin-search">Search this section<input type="search" id="admin-search" placeholder="Source, location, or keyword" autocomplete="off"></label><span id="admin-result-count" aria-live="polite"></span></div><p id="admin-section-note" class="admin-section-note"></p><div id="admin-records" class="admin-records"></div></section><aside id="admin-detail" class="admin-detail" aria-label="Selected record"></aside></div>
+<footer class="admin-desk-footer"><span>Search covers loaded records: up to 50 per section, 20 audit entries.</span><span id="admin-updated"></span></footer>
+</section>
+<div class="admin-policy"><span aria-hidden="true">!</span><p><strong>Review is not verification.</strong> AI discoveries remain unpublished until their event details and location are checked. This dashboard does not automatically publish them or rank route safety.</p></div>
+</div>
+{% endblock %}
+{% block extra_scripts %}<script type="module" src="{% static 'js/admin-workspace.js' %}?v=tickets-3"></script>{% endblock %}

@@ -1,0 +1,17 @@
+[functions.import-crime-report]
+# This machine-only endpoint checks its own secret bearer token.
+verify_jwt = false
+
+[functions.sync-crime-feeds]
+verify_jwt = false
+
+[functions.search-kimberley-crime]
+verify_jwt = false
+
+[functions.ai-discoveries]
+# Supabase Auth verifies the user inside this function.
+verify_jwt = false
+
+[functions.location-search]
+# User token is validated inside the handler.
+verify_jwt = false

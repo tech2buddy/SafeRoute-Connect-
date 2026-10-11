@@ -1,6 +1,8 @@
 {% extends "app_base.html" %}
+{% load static %}
 
 {% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/journey.css' %}?v=route-toolbar-4">
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -14,27 +16,24 @@
 {% endblock %}
 
 {% block page_content %}
-    <div class="app-grid-two">
-        <article class="dashboard-card app-form-card">
-            <h2>Route Planner</h2>
+    <div class="app-grid-two route-workbench route-navigation-layout">
+        <details open class="dashboard-card app-form-card route-planning-sheet">
+            <summary class="planner-panel-heading"><span>01 / PLAN YOUR JOURNEY</span><h2>Where to?</h2><small>Set your start and destination</small></summary>
             <form method="post" class="app-form" id="route-form">
                 {% csrf_token %}
 
                 <div class="app-action-row">
-                    <button type="button" class="app-inline-button app-inline-button-primary" id="use-live-location">
-                        Use My Live Location
-                    </button>
-                    <button type="button" class="app-inline-button" id="preview-live-route">
-                        Preview on Live Map
+                    <button type="button" class="app-inline-button" id="use-live-location">
+                        Use my location
                     </button>
                 </div>
 
                 <p class="app-helper-note">
-                    Choose your browser location or enter both places manually. The live map updates from real place search and route data.
+                    Location access is optional. Geoapify looks up the nearest mapped address for your GPS position.
                 </p>
 
                 {% for field in form %}
-                    <div class="form-group">
+                    <div class="form-group {% if field.name == 'safety_priority' %}route-preference-hidden{% endif %}">
                         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
                         {% for error in field.errors %}
@@ -43,21 +42,37 @@
                     </div>
                 {% endfor %}
 
-                <button type="submit" class="route-find-button route-find-button-submit">
-                    <span>Save This Route Search</span>
-                    <span class="route-arrow" aria-hidden="true"></span>
-                </button>
+                <button type="button" class="route-find-button" id="preview-live-route">Find routes <span class="route-arrow" aria-hidden="true"></span></button>
+                <p class="app-helper-note">Routes follow roads. Report markers are context, not a guarantee of safety.</p>
             </form>
-        </article>
+        </details>
 
-        <article class="dashboard-card app-info-card">
+        <article class="dashboard-card app-info-card" id="route-result">
             <div class="app-info-card-head">
-                <h2>Current Route Result</h2>
+                <h2>Your route</h2>
                 <span class="route-risk-tag {{ route_result.risk_key }}" id="route-risk-badge">{{ route_result.risk_label }}</span>
             </div>
 
+            <div class="route-preview-toolbar">
             <div class="app-map-meta">
                 <span class="map-status map-status-idle" id="map-status">Ready to load a live route preview.</span>
+            </div>
+            <div class="route-preview-choices">
+            <div id="route-options" class="route-options" aria-label="Available routes" aria-live="polite"></div>
+            <div class="app-action-row journey-controls">
+                <button type="button" class="app-inline-button app-inline-button-primary" id="start-journey" disabled>Start Journey</button>
+                <button type="button" class="app-inline-button" id="end-journey" hidden>End Journey</button>
+                <button type="button" class="app-inline-button" id="follow-journey" hidden>Recenter on me</button>
+                <button type="submit" form="route-form" disabled class="app-inline-button" id="save-planned-route" hidden>Save search</button>
+            </div>
+            </div>
+            </div>
+            <p id="route-save-status" role="status" aria-live="polite"></p>
+            <div id="journey-guidance" hidden class="journey-guidance">
+                <span class="journey-live-label">LIVE JOURNEY</span>
+                <strong id="journey-direction" role="status">Preparing directions...</strong>
+                <p id="journey-progress"></p>
+                <small>Keep this page open. Browser GPS guidance is approximate; obey road signs and stay aware of your surroundings.</small>
             </div>
 
             <div class="route-map-surface app-tall-map live-map-shell">
@@ -65,8 +80,8 @@
             </div>
 
             <div class="route-map-legend">
-                <span><i class="legend-green"></i>Safer streets</span>
-                <span><i class="legend-orange"></i>Caution areas</span>
+                <span><i class="legend-green"></i>Low concern reports</span>
+                <span><i class="legend-orange"></i>Caution reports</span>
                 <span><i class="legend-red"></i>Risk markers</span>
             </div>
 
@@ -84,22 +99,29 @@
                     <strong id="route-eta">{{ route_result.eta }}</strong>
                 </div>
                 <div>
-                    <small>Travel mode</small>
-                    <strong id="route-travel-mode">{{ route_result.travel_mode|title }}</strong>
+                    <small>Distance</small>
+                    <strong id="route-distance">--</strong>
+                    <small id="route-travel-mode"></small>
                 </div>
             </div>
 
             <p class="app-card-copy" id="route-summary-copy">{{ route_result.summary }}</p>
 
-            <div class="app-chip-row">
-                {% for waypoint in route_result.waypoints %}
-                    <span class="app-chip">{{ waypoint }}</span>
-                {% endfor %}
-            </div>
         </article>
     </div>
 
-    <article class="dashboard-card app-list-card">
+    <details class="route-explore" id="route-explore">
+        <summary>Explore nearby <small>Places, saved searches &amp; AI discoveries</small></summary>
+        <section class="route-discovery-panel">
+            <div class="route-discovery-heading"><span>DESTINATION IDEAS</span><h2>Around Kimberley</h2></div>
+            <div class="route-suggestions" aria-label="Suggested destinations">
+                <button type="button" data-destination="Sol Plaatje University, Kimberley, South Africa"><span>Campus</span><strong>Sol Plaatje University</strong></button>
+                <button type="button" data-destination="Diamond Pavilion Shopping Centre, Kimberley, South Africa"><span>Shopping</span><strong>Diamond Pavilion</strong></button>
+                <button type="button" data-destination="McGregor Museum, Kimberley, South Africa"><span>Explore</span><strong>McGregor Museum</strong></button>
+            </div>
+            <p class="route-suggestion-note">Destination ideas, not safety recommendations.</p>
+        </section>
+    <article class="dashboard-card app-list-card route-history-panel">
         <div class="dashboard-card-head">
             <h2>Recent Searches</h2>
             <a href="{% url 'my_routes' %}">Open route history</a>
@@ -118,6 +140,7 @@
             {% endfor %}
         </div>
     </article>
+    </details>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -126,7 +149,13 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""
     ></script>
-    <script>
+    <script type="module">
+        import { supabase } from "{% static 'js/supabase-client.js' %}";
+        import { tileUrl, tileOptions } from "{% static 'js/map-basemap.js' %}";
+        import { setupJourney } from "{% static 'js/journey-navigation.js' %}";
+        import { readIncidentFeed, appendProvenance } from "{% static 'js/incident-feed.js' %}";
+        import { addDemoMapLayer } from "{% static 'js/demo-map-layer.js' %}";
+        import { lookupPlace } from "{% static 'js/place-search.js' %}?v=geoapify-1";
         (() => {
             const defaultCenter = [-28.7282, 24.7499];
             const startField = document.getElementById("id_start_location");
@@ -151,6 +180,23 @@
             let liveStartPoint = null;
             let locationMarker = null;
             let locationWatch = null;
+            let incidentLayer = null;
+            let journey = null;
+            let previewGeneration = 0;
+            let locationGeneration = 0;
+            let locationName = 'Your current location';
+            let nameLookupPoint = null;
+            let nameLookupAt = 0;
+            let nameLookupPending = false;
+            const locationDetail = document.createElement('small');
+            locationDetail.className = 'app-helper-note';
+            locationDetail.setAttribute('role','status');
+            locationDetail.hidden = true;
+            startField.after(locationDetail);
+            const incidentStatus = document.createElement('p');
+            incidentStatus.className = 'app-helper-note';
+            incidentStatus.setAttribute('role', 'status');
+            statusNode.after(incidentStatus);
 
             const riskText = {
                 safest: {
@@ -180,11 +226,34 @@
                     zoomControl: true,
                     attributionControl: true,
                 }).setView(defaultCenter, 13);
-                L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                    maxZoom: 19,
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                }).addTo(map);
+                L.tileLayer(tileUrl, tileOptions).addTo(map);
+                map.attributionControl.addAttribution('Address search by <a href="https://www.geoapify.com/">Geoapify</a>');
                 map.attributionControl.setPrefix(false);
+                addDemoMapLayer(map);
+                incidentLayer = L.featureGroup().addTo(map);
+                loadIncidents();
+            }
+
+            async function loadIncidents() {
+                incidentStatus.textContent = 'Loading incident markers...';
+                try {
+                    const { data:auth, error:authError } = await supabase.auth.getUser();
+                    if (authError || !auth.user) throw new Error('Sign in to see reported incidents on this map.');
+                    const data = await readIncidentFeed();
+                    incidentLayer.clearLayers();
+                    for (const report of data) {
+                        const popup = document.createElement('div');
+                        for (const text of [report.incident_type.replaceAll('_', ' '), report.location, report.description]) {
+                            const line = document.createElement('p'); line.textContent = text; popup.append(line);
+                        }
+                        appendProvenance(popup, report);
+                        L.circleMarker([report.latitude, report.longitude], {
+                            color: { safe:'#149347', moderate:'#f59e0b', risky:'#ef4444' }[report.severity],
+                            radius:9, weight:3, fillOpacity:.8,
+                        }).addTo(incidentLayer).bindPopup(popup);
+                    }
+                    incidentStatus.textContent = `${data.length} reported incidents loaded. Markers show reports, not verified route safety.`;
+                } catch (error) { incidentStatus.textContent = error.message; }
             }
 
             function getRoutingProfile() {
@@ -192,50 +261,47 @@
             }
 
             async function geocodePlace(query) {
-                const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(query)}`;
-                const response = await fetch(url, {
-                    headers: {
-                        "Accept": "application/json",
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error("Location search failed.");
+                // Published mall GPS from the Kimberley visitor directory (shopping centres).
+                if (/^diamond pavilion (shopping centre|shopping mall|mall), kimberley, south africa$/i.test(query.trim())) {
+                    return { lat:-28.7655667, lng:24.764, label:'Diamond Pavilion Mall, Kimberley' };
                 }
-
-                const results = await response.json();
-                if (!results.length) {
-                    throw new Error(`No map location found for "${query}".`);
+                const coordinates = query.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+                if (coordinates) {
+                    const lat = Number(coordinates[1]), lng = Number(coordinates[2]);
+                    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) throw new Error('Invalid coordinates.');
+                    return { lat, lng, label:query };
                 }
-
-                return {
-                    lat: Number(results[0].lat),
-                    lng: Number(results[0].lon),
-                    label: results[0].display_name,
-                };
+                return lookupPlace({action:'search',query});
             }
 
             async function reverseGeocode(lat, lng) {
-                const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
-                const response = await fetch(url, {
-                    headers: {
-                        "Accept": "application/json",
-                    },
-                });
+                const point = await lookupPlace({action:'reverse',lat,lng});
+                return point.label;
+            }
 
-                if (!response.ok) {
-                    throw new Error("Reverse geocoding failed.");
+            async function updateLocationName(point,generation) {
+                if (nameLookupPending || Date.now()-nameLookupAt < 60000) return;
+                if (nameLookupPoint && L.latLng(point.lat,point.lng).distanceTo(nameLookupPoint) < 250) return;
+                nameLookupPending = true; nameLookupAt = Date.now();
+                try {
+                    const label = await reverseGeocode(point.lat,point.lng);
+                    if (generation !== locationGeneration || startField.dataset.source !== 'live') return;
+                    locationName = label;
+                    nameLookupPoint = L.latLng(point.lat,point.lng);
+                    startField.value = label;
+                    startSummary.textContent = label;
+                    locationDetail.textContent = `GPS accuracy approximately ${Math.round(liveStartPoint.accuracy)} m. ${label === 'Your current GPS position' ? 'No street or building name is mapped at this point. Your blue dot still uses GPS.' : 'This is the nearest mapped address, not a confirmed exact building.'}`;
+                } catch {
+                    // Address lookup must never prevent routing from the actual GPS fix.
+                } finally {
+                    if (generation === locationGeneration) nameLookupPending = false;
                 }
-
-                const result = await response.json();
-                return result.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
             }
 
             function updateRiskSummary() {
-                const currentRisk = riskText[safetyField.value] || riskText.safest;
-                riskSummary.textContent = currentRisk.label;
-                riskSummary.className = `route-risk-tag ${currentRisk.className}`;
-                routeSummary.textContent = currentRisk.copy;
+                riskSummary.textContent = 'Safety not assessed';
+                riskSummary.className = 'route-risk-tag';
+                routeSummary.textContent = 'This is a road-following route preview. Report markers provide context; routing does not yet avoid incidents or guarantee safety.';
             }
 
             function clearRoute() {
@@ -255,7 +321,8 @@
 
             async function fetchRoute(startPoint, endPoint) {
                 const profile = getRoutingProfile();
-                const url = `https://router.project-osrm.org/route/v1/${profile}/${startPoint.lng},${startPoint.lat};${endPoint.lng},${endPoint.lat}?overview=full&geometries=geojson`;
+                const server = travelModeField.value === 'walk' ? 'https://routing.openstreetmap.de/routed-foot' : 'https://router.project-osrm.org';
+                const url = `${server}/route/v1/driving/${startPoint.lng},${startPoint.lat};${endPoint.lng},${endPoint.lat}?overview=full&geometries=geojson&steps=true&alternatives=true`;
                 const response = await fetch(url, {
                     headers: {
                         "Accept": "application/json",
@@ -271,7 +338,7 @@
                     throw new Error("No route was found for those locations.");
                 }
 
-                return data.routes[0];
+                return { ...data.routes[0], alternatives:data.routes.slice(0,3) };
             }
 
             function formatMinutes(seconds) {
@@ -329,6 +396,8 @@
                 if (firstFix || !routeLine) {
                     map.fitBounds(liveRadius.getBounds(), { padding: [32, 32], maxZoom: 17 });
                 }
+                // Keep the calculated route's ETA and status during location updates.
+                if (routeLine) return;
 
                 startSummary.textContent = label;
                 destinationSummary.textContent = destinationField.value.trim() || "Add a destination";
@@ -339,6 +408,14 @@
             }
 
             async function previewRoute() {
+                const request = ++previewGeneration;
+                document.getElementById('route-result').classList.remove('route-ready');
+                journey?.invalidate();
+                previewButton.disabled = true;
+                previewButton.textContent = 'Finding routes...';
+                document.getElementById('save-planned-route').hidden = true;
+                document.getElementById('route-options').replaceChildren();
+                clearRoute();
                 try {
                     setStatus("Finding route locations...", "loading");
                     updateRiskSummary();
@@ -349,13 +426,42 @@
                     ]);
 
                     const route = await fetchRoute(startPoint, destinationPoint);
+                    if (request !== previewGeneration) return;
+                    if (route.distance < 30) throw new Error('Start and destination are the same place. Choose a different destination.');
+                    showRoute(route, startPoint, destinationPoint);
+                    const choices = route.alternatives || [route];
+                    const options = document.getElementById('route-options');
+                    const heading = document.createElement('p'); heading.textContent = choices.length > 1 ? 'Choose your route' : 'One route available'; options.append(heading);
+                    choices.forEach((choice,index) => {
+                        const button = document.createElement('button'); button.type = 'button'; button.className = 'route-option';
+                        button.setAttribute('aria-pressed',String(index === 0));
+                        const title = document.createElement('strong'); title.textContent = `${formatMinutes(choice.duration)} / ${(choice.distance/1000).toFixed(1)} km`;
+                        const note = document.createElement('small'); note.textContent = `Route ${index+1} - safety not assessed`;
+                        button.append(title,note);
+                        button.addEventListener('click', () => {
+                            journey.stop(false);
+                            showRoute(choice,startPoint,destinationPoint);
+                            options.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed',String(item === button)));
+                        });
+                        options.append(button);
+                    });
+                    document.querySelector('.route-planning-sheet').open = false;
+                    if (matchMedia('(min-width:901px)').matches) document.querySelector('.route-planning-sheet').open = true;
+                } catch (error) {
+                    if (request === previewGeneration) setStatus(error.message || 'Unable to find a route.', 'error');
+                } finally {
+                    if (request === previewGeneration) { previewButton.disabled = false; previewButton.textContent = 'Find routes'; }
+                }
+            }
 
+            function showRoute(route,startPoint,destinationPoint) {
+                    document.getElementById('route-result').classList.add('route-ready');
                     clearRoute();
 
                     routeLine = L.geoJSON(route.geometry, {
                         style: {
-                            color: "#149347",
-                            weight: 6,
+                            color: "#2563eb",
+                            weight: 7,
                             opacity: 0.95,
                         },
                     }).addTo(map);
@@ -377,17 +483,21 @@
 
                     map.fitBounds(routeLine.getBounds(), {
                         padding: [24, 24],
+                        maxZoom:16,
                     });
+                    startMarker.bindTooltip('Start', { permanent:true, direction:'top' });
+                    endMarker.bindTooltip('Destination', { permanent:true, direction:'top' });
+                    map.invalidateSize();
 
                     startSummary.textContent = startField.value.trim() || startPoint.label;
                     destinationSummary.textContent = destinationField.value.trim() || destinationPoint.label;
                     etaSummary.textContent = formatMinutes(route.duration);
+                    document.getElementById('route-distance').textContent = `${(route.distance/1000).toFixed(1)} km`;
                     travelModeSummary.textContent = travelModeField.options[travelModeField.selectedIndex].text;
 
-                    setStatus("Live route preview updated.", "success");
-                } catch (error) {
-                    setStatus(error.message || "Unable to load the live route preview.", "error");
-                }
+                    setStatus(`Route marked in blue: ${(route.distance / 1000).toFixed(1)} km to your destination.`, "success");
+                    journey.setRoute(route, destinationPoint);
+                    document.getElementById('save-planned-route').hidden = false;
             }
 
             function useLiveLocation({ fallbackPreview = false, triggeredByUser = true } = {}) {
@@ -402,14 +512,21 @@
                 setStatus(triggeredByUser ? "Requesting your live location..." : "Checking your live location...", "loading");
 
                 if (locationWatch !== null) navigator.geolocation.clearWatch(locationWatch);
+                const generation = ++locationGeneration;
+                locationName = 'Your current location'; nameLookupPoint = null;
+                nameLookupAt = 0; nameLookupPending = false;
                 locationWatch = navigator.geolocation.watchPosition(
                     (position) => {
+                        if (generation !== locationGeneration) return;
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         liveStartPoint = { lat, lng, accuracy: position.coords.accuracy };
-                        startField.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                        startField.value = locationName;
                         startField.dataset.source = "live";
-                        showLiveLocationOnly(liveStartPoint, "Your current location");
+                        locationDetail.hidden = false;
+                        locationDetail.textContent = `GPS accuracy approximately ${Math.round(position.coords.accuracy)} m. ${position.coords.accuracy > 100 ? 'Your device is giving an approximate location; enable precise location in device settings.' : 'The blue dot shows your device position; the address is a nearby mapped feature.'}`;
+                        showLiveLocationOnly(liveStartPoint, locationName);
+                        updateLocationName(liveStartPoint,generation);
                     },
                     (error) => {
                         if (fallbackPreview) {
@@ -433,6 +550,8 @@
             }
 
             startField.addEventListener("input", () => {
+                locationGeneration++;
+                locationDetail.hidden = true;
                 startField.dataset.source = "manual";
                 if (locationWatch !== null) navigator.geolocation.clearWatch(locationWatch);
                 locationWatch = null;
@@ -443,10 +562,64 @@
                 previewRoute();
             });
             safetyField.addEventListener("change", updateRiskSummary);
-            liveLocationButton.addEventListener("click", () => useLiveLocation());
+            liveLocationButton.addEventListener("click", () => { invalidatePlan(); useLiveLocation(); });
             previewButton.addEventListener("click", previewRoute);
+            document.getElementById('route-form').addEventListener('keydown', event => {
+                if (event.key === 'Enter' && event.target.tagName === 'INPUT') { event.preventDefault(); previewRoute(); }
+            });
+            document.querySelectorAll('[data-destination]').forEach(button => {
+                button.addEventListener('click', () => {
+                    destinationField.value = button.dataset.destination;
+                    document.querySelector('.route-planning-sheet').open = true;
+                    document.querySelectorAll('[data-destination]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+                    if (startField.value.trim()) previewRoute();
+                    else setStatus('Choose your starting point or use your location to preview this journey.');
+                });
+            });
 
             initMap();
+            journey = setupJourney({ map, fetchRoute, setStatus, onRoute(route, point, destination) {
+                locationGeneration++;
+                clearRoute();
+                routeLine = L.geoJSON(route.geometry, { style:{ color:'#2563eb', weight:7, opacity:.95 } }).addTo(map);
+                endMarker = L.circleMarker([destination.lat, destination.lng], { radius:7, color:'#ef4444', weight:4, fillOpacity:1 }).addTo(map).bindTooltip('Destination');
+                startSummary.textContent = 'Your current location';
+                etaSummary.textContent = formatMinutes(route.duration);
+                document.getElementById('route-distance').textContent = `${(route.distance/1000).toFixed(1)} km`;
+                if (locationWatch !== null) navigator.geolocation.clearWatch(locationWatch);
+                locationWatch = null;
+            }});
+            function invalidatePlan() {
+                document.getElementById('route-result').classList.remove('route-ready');
+                previewGeneration++;
+                journey.invalidate(); clearRoute();
+                document.getElementById('route-options').replaceChildren();
+                document.getElementById('save-planned-route').hidden = true;
+                previewButton.disabled = false; previewButton.textContent = 'Find routes';
+                etaSummary.textContent = '--'; document.getElementById('route-distance').textContent = '--';
+                setStatus('Your journey changed. Find routes to update the map.');
+            }
+            [startField,destinationField].forEach(field => field.addEventListener('input',invalidatePlan));
+            document.addEventListener('reuse-route-search', event => {
+                invalidatePlan();
+                if (locationWatch !== null) navigator.geolocation.clearWatch(locationWatch);
+                locationWatch = null; startField.dataset.source = 'manual';
+                startField.value = event.detail.start_location;
+                destinationField.value = event.detail.destination;
+                travelModeField.value = event.detail.travel_mode;
+                document.querySelector('.route-planning-sheet').open = true;
+                previewRoute();
+                document.querySelector('.route-workbench').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches ? 'instant' : 'smooth',block:'start'});
+            });
+            document.querySelector('.route-planning-sheet').addEventListener('toggle', () => requestAnimationFrame(() => map.invalidateSize()));
+            startField.value = ''; destinationField.value = '';
+            destinationField.placeholder = 'Where would you like to go?';
+            startField.placeholder = 'Enter a start or use my location';
+            destinationField.setAttribute('list','kimberley-destinations');
+            const places = document.createElement('datalist'); places.id = 'kimberley-destinations';
+            document.querySelectorAll('[data-destination]').forEach(button => { const option = document.createElement('option'); option.value = button.dataset.destination; places.append(option); });
+            destinationField.after(places);
+            startSummary.textContent = 'Choose a start'; destinationSummary.textContent = 'Choose a destination'; etaSummary.textContent = '--';
             updateRiskSummary();
             setStatus("Use my location to show your position, or enter your starting point manually.");
             window.addEventListener("pagehide", () => {

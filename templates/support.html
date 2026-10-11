@@ -1,27 +1,27 @@
 {% extends "app_base.html" %}
+{% load static %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/support-hub.css' %}?v=1">{% endblock %}
 
 {% block page_content %}
-    <div class="app-grid-two">
+    <section class="support-welcome"><span>HELP / SAFEROUTE</span><h2>Let's get you<br>moving again.</h2><p>Practical answers for your journeys, reports, and account.</p></section>
+    <nav class="support-shortcuts" aria-label="Quick actions"><a href="{% url 'find_route' %}">Plan a journey &rarr;</a><a href="{% url 'report_incident' %}">Report a concern &rarr;</a><a href="{% url 'settings' %}">Manage preferences &rarr;</a></nav>
+    <div class="app-grid-two support-layout">
         <article class="dashboard-card app-list-card">
             <div class="dashboard-card-head">
-                <h2>Support Topics</h2>
+                <h2>Questions, answered.</h2>
                 <a href="{% url 'routes' %}">Back to dashboard</a>
             </div>
             <div class="app-simple-list">
                 {% for topic in topics %}
-                    <div class="app-simple-row app-simple-row-block">
-                        <div>
-                            <strong>{{ topic.title }}</strong>
-                            <small>{{ topic.body }}</small>
-                        </div>
-                    </div>
+                    <details class="support-answer"><summary>{{ topic.title }}</summary><p>{{ topic.body }}</p></details>
                 {% endfor %}
             </div>
         </article>
 
         <article class="dashboard-card app-form-card">
-            <h2>Contact Support</h2>
-            <form method="post" class="app-form">
+            <span class="support-kicker">SOMETHING NOT WORKING?</span><h2>Describe the issue.</h2>
+            <p class="support-note">Send a private ticket to the project administrators. Sign in first. This is not monitored for emergencies.</p>
+            <form class="app-form" id="support-draft-form">
                 {% csrf_token %}
                 {% for field in form %}
                     <div class="form-group">
@@ -33,10 +33,13 @@
                     </div>
                 {% endfor %}
                 <button type="submit" class="route-find-button route-find-button-submit">
-                    <span>Send Message</span>
+                    <span>Send support ticket</span>
                     <span class="route-arrow" aria-hidden="true"></span>
                 </button>
+                <p id="support-draft-status" role="status" aria-live="polite">Do not include passwords, API keys, or private location details.</p>
             </form>
         </article>
     </div>
+    <aside class="support-emergency"><strong>In immediate danger? Get to safety first.</strong><p>SafeRoute is not an emergency service. This page is not monitored for urgent incidents. Contact local emergency services for urgent help.</p></aside>
 {% endblock %}
+{% block extra_scripts %}<script type="module" src="{% static 'js/support-tickets.js' %}?v=1"></script>{% endblock %}

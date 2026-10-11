@@ -1,0 +1,32 @@
+.settings-hub { display:grid; grid-template-columns:minmax(260px,.75fr) minmax(0,1.25fr); gap:24px; max-width:1180px; margin:0 auto; align-items:start; }
+.settings-kicker { color:#17814b; font-size:10px; letter-spacing:.15em; font-weight:700; }
+.settings-overview { padding:34px; border:1px solid #d8e7dd; border-radius:24px; background:radial-gradient(ellipse at 100% 0%,#d2ecdc,transparent 70%),#edf6ef; }
+.settings-overview h2 { font-size:clamp(30px,3.3vw,44px); color:#173e2a; letter-spacing:-.045em; line-height:1.08; margin:24px 0 18px; }
+.settings-overview>p { color:#64816e; font-size:13px; line-height:1.8; }
+.settings-overview-note { border-top:1px solid #cddfd2; padding-top:24px; margin-top:34px; }
+.settings-overview-note strong { color:#315b40; font-size:14px; }
+.settings-overview-note p { color:#74907c; font-size:12px; line-height:1.8; }
+.settings-overview>a { display:flex; justify-content:space-between; color:#15864b; text-decoration:none; border-top:1px solid #cddfd2; padding-top:20px; margin-top:24px; font-size:13px; font-weight:600; }
+.settings-hub .settings-preferences { padding:32px; border-radius:24px; min-width:0; }
+.settings-preferences h2 { font-size:27px; letter-spacing:-.035em; margin:12px 0 8px; }
+.settings-caption { font-size:13px; color:#7a8b80; line-height:1.6; }
+.settings-preferences .app-form { max-width:none; }
+.settings-group { padding:24px 0; border-bottom:1px solid #e3ece6; }
+.settings-group-heading { display:flex; gap:14px; align-items:start; margin-bottom:20px; }
+.settings-group-heading>span { display:grid; place-items:center; width:36px; height:36px; flex:0 0 36px; background:#eaf5ed; border-radius:11px; color:#18834a; font-size:11px; font-weight:700; }
+.settings-group h3 { font-size:17px; margin:0 0 6px; }
+.settings-group-heading p { font-size:12px; line-height:1.6; color:#7c8b81; margin:0; }
+.settings-group .form-group { margin-bottom:12px; }
+.settings-group label { font-size:11px; color:#54715f; }
+.settings-group select { width:100%; box-sizing:border-box; min-height:48px; border:1px solid #dce8e0; border-radius:12px; padding:12px 14px; background:#f9fcfa; color:#284b35; }
+.settings-limitation { font-size:11px; line-height:1.8; color:#819186; padding-left:12px; border-left:2px solid #d9e8dd; margin:14px 0 0; }
+.settings-save-bar { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px; margin-top:24px; }
+.settings-save-bar #account-status { font-size:12px; color:#647e6d; margin:0; flex:1 1 180px; }
+.settings-save-bar .route-find-button { width:auto; min-width:170px; min-height:46px; margin:0; }
+.settings-transparency { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:28px; padding:24px 28px; border:1px solid #dce7df; border-radius:18px; background:#fff; }
+.settings-transparency h3 { font-size:17px; margin:10px 0 8px; }
+.settings-transparency p { font-size:12px; line-height:1.8; color:#7b8a80; max-width:720px; margin:0; }
+.settings-transparency a { white-space:nowrap; }
+.settings-hub :is(a,select,button):focus-visible { outline:3px solid #70bc8e; outline-offset:3px; }
+@media(max-width:850px) { .settings-hub { grid-template-columns:1fr; } .settings-overview h2 br { display:none; } .settings-overview-note { margin-top:22px; } }
+@media(max-width:600px) { .settings-overview,.settings-hub .settings-preferences { padding:24px; border-radius:18px; } .settings-transparency { flex-direction:column; align-items:start; padding:24px; } .settings-group select { font-size:16px; } .settings-save-bar .route-find-button { width:100%; } }

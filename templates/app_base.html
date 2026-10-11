@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page_title }} | SafeRoute Connect</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=leaflet-path-fix">
     <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
-    <link rel="stylesheet" href="{% static 'css/workspace-mobile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/workspace-mobile.css' %}?v=discovery-cards-2">
+    <link rel="stylesheet" href="{% static 'css/account-controls.css' %}?v=1">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -32,7 +33,7 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M12 20.3c1.6 0 2.8-1.2 2.8-2.8H9.2c0 1.6 1.2 2.8 2.8 2.8Zm6-4.2H6.1l1.4-1.9v-4c0-2.7 1.7-5 4.3-5.7V3.4a.9.9 0 1 1 1.8 0v1.1c2.5.7 4.3 3 4.3 5.7v4l1.1 1.9Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
                     </svg>
-                    <span class="dashboard-badge">3</span>
+                    <span class="dashboard-badge" hidden></span>
                 </a>
 
                 <a href="{% url 'profile' %}" class="dashboard-user-pill">
@@ -42,13 +43,13 @@
                             <path d="M5 19c.8-3 3.5-4.8 7-4.8S18.2 16 19 19" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/>
                         </svg>
                     </span>
-                    <span class="dashboard-user-copy">
+                    <span class="dashboard-account-text"><small class="dashboard-account-label">YOUR ACCOUNT</small><span class="dashboard-user-copy">
                         {% if request.user.is_authenticated %}
                             {{ request.user.username }}
                         {% else %}
                             Guest Explorer
                         {% endif %}
-                    </span>
+                    </span></span>
                     <span class="dashboard-caret" aria-hidden="true"></span>
                 </a>
 
@@ -63,6 +64,7 @@
         <div class="dashboard-layout">
             <button class="workspace-menu-toggle" type="button" aria-expanded="false" aria-controls="workspace-navigation">Workspace menu <span aria-hidden="true">+</span></button>
             <aside class="dashboard-sidebar" id="workspace-navigation">
+                {% block workspace_navigation %}
                 <p class="workspace-nav-label">YOUR WORKSPACE</p>
                 <a href="{% url 'routes' %}" class="dashboard-nav-item {% if active_page == 'dashboard' %}is-active{% endif %}">
                     <span class="dashboard-nav-icon" aria-hidden="true">
@@ -156,6 +158,7 @@
                     </span>
                     <span>Help &amp; Support</span>
                 </a>
+                {% endblock %}
             </aside>
 
             <main class="dashboard-main">
@@ -195,6 +198,11 @@
             });
         })();
     </script>
+    <script type="module" src="{% static 'js/supabase-workspace.js' %}"></script>
+    <script type="module" src="{% static 'js/community-data.js' %}"></script>
+    <script type="module" src="{% static 'js/saved-routes.js' %}"></script>
+    <script type="module" src="{% static 'js/account-data.js' %}"></script>
+    <script type="module" src="{% static 'js/ai-discoveries.js' %}?v=2"></script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

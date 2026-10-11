@@ -16,6 +16,7 @@ from .views import (
     settings_view,
     signup_view,
     support_view,
+    admin_dashboard_view,
 )
 
 
@@ -37,4 +38,5 @@ urlpatterns = [
     path("profile/", profile_view, name="profile"),
     path("settings/", settings_view, name="settings"),
     path("support/", support_view, name="support"),
+    path("manage/", admin_dashboard_view, name="admin_dashboard"),
 ]

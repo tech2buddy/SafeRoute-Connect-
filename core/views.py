@@ -6,6 +6,8 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .forms import (
+    SupabaseLoginForm,
+    SupabaseSignupForm,
     IncidentReportForm,
     SafeRouteLoginForm,
     SafeRouteProfileForm,
@@ -75,7 +77,7 @@ FAVORITE_ROUTES = [
 HELP_TOPICS = [
     {
         "title": "How route safety works",
-        "body": "SafeRoute combines route preference, recent reports, and area awareness cues to highlight lower-risk paths.",
+        "body": "Routes follow roads but are not currently ranked by crime risk. Incident markers provide context, not a safety guarantee. Always use your own judgement.",
     },
     {
         "title": "When to report an incident",
@@ -85,6 +87,10 @@ HELP_TOPICS = [
         "title": "Guest vs account access",
         "body": "Guests can explore prototype pages, while signed-in users can personalize their profile and save settings.",
     },
+    {"title": "Why can't the map find my building?", "body": "Some local buildings are not listed. Try the street number, street name, and Kimberley. GPS can still provide the start point; a returned address is the nearest mapped feature, not a confirmed exact building."},
+    {"title": "How do I follow a route?", "body": "Enter a start and destination, choose Find routes, then Start Journey. Allow GPS and keep the page open. Browser guidance is approximate; obey road signs and remain aware of your surroundings."},
+    {"title": "Are AI-found reports live alerts?", "body": "No. AI discoveries are unverified search results and do not affect route safety. Community reports are user submissions. Demo markers are fictional examples, not actual incidents."},
+    {"title": "My GPS position is wrong", "body": "Check browser location permissions and the displayed accuracy. Move somewhere with a clearer GPS signal or enter a starting address manually. A readable address does not improve the underlying GPS accuracy."},
 ]
 
 
@@ -152,11 +158,12 @@ def _build_route_history_item(result):
 
 
 def _community_reports(request):
-    return _session_items(request, "custom_reports", DEFAULT_COMMUNITY_REPORTS)
+    # Community incidents are loaded by the authenticated Supabase client.
+    return []
 
 
 def _route_history(request):
-    return _session_items(request, "custom_routes", DEFAULT_ROUTE_HISTORY)
+    return []
 
 
 def _build_alerts(reports):
@@ -217,14 +224,7 @@ def public_page_view(request, page):
 
 
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect("routes")
-
-    form = SafeRouteLoginForm(request, data=request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        login(request, form.get_user())
-        messages.success(request, "Welcome back to SafeRoute Connect.")
-        return redirect("routes")
+    form = SupabaseLoginForm()
 
     return render(
         request,
@@ -237,15 +237,7 @@ def login_view(request):
 
 
 def signup_view(request):
-    if request.user.is_authenticated:
-        return redirect("routes")
-
-    form = SafeRouteSignupForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        user = form.save()
-        login(request, user)
-        messages.success(request, "Your account has been created.")
-        return redirect("routes")
+    form = SupabaseSignupForm()
 
     return render(
         request,
@@ -307,7 +299,7 @@ def my_routes_view(request):
         "page_title": "My Routes",
         "page_subtitle": "Review recent route history and the paths you keep coming back to.",
         "route_history": _route_history(request),
-        "favorite_routes": FAVORITE_ROUTES,
+        "favorite_routes": [],
     }
     return render(request, "my_routes.html", context)
 
@@ -363,7 +355,7 @@ def community_reports_view(request):
     context = {
         "active_page": "community_reports",
         "page_title": "Community Reports",
-        "page_subtitle": "A live-looking feed of recent submissions, risk notes, and neighborhood observations.",
+        "page_subtitle": "Recent safety reports shared by the community.",
         "reports": reports,
     }
     return render(request, "community_reports.html", context)
@@ -403,7 +395,7 @@ def profile_view(request):
         "route_count": len(_route_history(request)),
         "report_count": len(_community_reports(request)),
     }
-    return render(request, "profile.html", context)
+    return render(request, "account.html", context)
 
 
 def settings_view(request):
@@ -430,7 +422,12 @@ def settings_view(request):
         "page_subtitle": "Choose how the product should notify you and how route decisions should default.",
         "form": form,
     }
-    return render(request, "settings.html", context)
+    return render(request, "account.html", context)
+
+
+def admin_dashboard_view(request):
+    # The HTML shell is public; every data and moderation RPC checks Supabase admin membership.
+    return render(request, "admin_dashboard.html", {"active_page":"admin_dashboard", "page_title":"Admin", "page_subtitle":"Community oversight, reports, and review activity."})
 
 
 def support_view(request):

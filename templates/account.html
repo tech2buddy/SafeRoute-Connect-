@@ -1,0 +1,49 @@
+{% extends 'app_base.html' %}
+{% load static %}
+{% block extra_head %}{% if active_page == 'profile' %}<link rel="stylesheet" href="{% static 'css/profile-hub.css' %}?v=1">{% else %}<link rel="stylesheet" href="{% static 'css/settings-hub.css' %}?v=1">{% endif %}{% endblock %}
+{% block page_content %}
+{% if active_page == 'profile' %}
+<div class="profile-hub">
+<section class="profile-identity">
+    <span class="profile-kicker">YOUR SAFEROUTE ACCOUNT</span>
+    <div class="profile-identity-main"><div id="profile-initials" class="profile-monogram" aria-hidden="true">SR</div><div><h2 id="profile-name">Your profile</h2><p id="profile-member-since">Sign in to see your account</p></div></div>
+    <div class="profile-activity"><a href="{% url 'my_routes' %}"><strong id="profile-route-count">--</strong><span>Saved routes</span></a><a href="{% url 'community_reports' %}"><strong id="profile-report-count">--</strong><span>Your reports</span></a></div>
+    <p class="profile-identity-note">Your journeys and contributions, in one place.</p>
+</section>
+<article class="dashboard-card profile-details">
+    <span class="profile-kicker">PERSONAL DETAILS</span><h2>Make it yours.</h2><p class="profile-caption">Choose the name shown on your account.</p>
+    <form id="account-form" class="app-form">
+        <div class="profile-email-block"><span>Email address</span><p id="account-email">Loading...</p><small>Your sign-in email. Display-name changes do not change it.</small></div>
+        <div class="form-group"><label for="display-name">Display name</label><input id="display-name" name="display_name" class="app-input" required maxlength="100" autocomplete="nickname"><small>Use a name you are comfortable sharing.</small></div>
+        <p id="account-status" role="status" aria-live="polite">Loading account...</p>
+        <button class="route-find-button" type="submit" disabled>Save profile</button>
+    </form>
+</article>
+<section class="profile-shortcuts" aria-label="Account shortcuts">
+    <a href="{% url 'my_routes' %}"><span>01 / YOUR JOURNEYS</span><strong>Pick up where you left off</strong><p>Revisit saved searches and manage your routes.</p><b aria-hidden="true">&rarr;</b></a>
+    <a href="{% url 'report_incident' %}"><span>02 / YOUR COMMUNITY</span><strong>Share what you notice</strong><p>Report a safety concern with a location pin.</p><b aria-hidden="true">&rarr;</b></a>
+    <a href="{% url 'settings' %}"><span>03 / YOUR PREFERENCES</span><strong>Set things your way</strong><p>Manage your saved planner preferences.</p><b aria-hidden="true">&rarr;</b></a>
+</section>
+</div>
+{% else %}
+<div class="settings-hub">
+<aside class="settings-overview"><span class="settings-kicker">YOUR EXPERIENCE</span><h2>A little more<br>your way.</h2><p>Keep your preferences together, ready for your next journey.</p><div class="settings-overview-note"><strong>You stay in control.</strong><p>Location is only requested when you choose it. Saving preferences does not enable background tracking.</p></div><a href="{% url 'profile' %}">Manage your profile <span aria-hidden="true">&rarr;</span></a></aside>
+<article class="dashboard-card settings-preferences">
+<span class="settings-kicker">PREFERENCES</span><h2>Your journey defaults</h2><p class="settings-caption">Saved to your account, not just this device.</p>
+<form id="account-form" class="app-form">
+<section class="settings-group"><div class="settings-group-heading"><span>01</span><div><h3>Route preference</h3><p>Tell us what you would like to prioritize.</p></div></div>
+<div class="form-group"><label for="preference">Preferred approach</label><select id="preference" name="route_preference" class="app-select"><option value="safest">Safety-focused</option><option value="balanced">Balanced</option><option value="fastest">Time-focused</option></select></div>
+<p class="settings-limitation">Saved as a preference only. Current routes are not ranked by incident risk and do not automatically avoid reports.</p></section>
+<section class="settings-group"><div class="settings-group-heading"><span>02</span><div><h3>Your local area</h3><p>Choose the area size you would like for nearby updates.</p></div></div>
+<div class="form-group"><label for="radius">Preferred report radius</label><select id="radius" name="alert_radius" class="app-select"><option value="2">2 km / Close to me</option><option value="5" selected>5 km / My neighbourhood</option><option value="10">10 km / A wider view</option></select></div>
+<p class="settings-limitation">This choice is saved. Radius-based filtering and email notifications are not active yet.</p></section>
+<div class="settings-save-bar">
+<p id="account-status" role="status" aria-live="polite">Loading account...</p>
+<button class="route-find-button" type="submit" disabled>Save preferences</button>
+</div>
+</form>
+</article>
+<section class="settings-transparency"><div><span class="settings-kicker">GOOD TO KNOW</span><h3>Awareness, not a safety guarantee.</h3><p>Community reports may be unverified. AI discoveries are separate from confirmed incidents. Always use your own judgement.</p></div><a href="{% url 'support' %}" class="app-inline-button">Help &amp; support</a></section>
+</div>
+{% endif %}
+{% endblock %}

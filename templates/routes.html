@@ -1,4 +1,5 @@
 {% extends "app_base.html" %}
+{% load static %}
 
 {% block extra_head %}
     <link
@@ -78,6 +79,8 @@
                 </article>
 
                 <article class="dashboard-card route-map-card">
+                    <div class="dashboard-card-head"><h2>Community incident map</h2><button type="button" class="app-inline-button" id="dashboard-locate">Locate me</button></div>
+                    <p id="dashboard-map-status" role="status">Loading incidents...</p>
                     <div class="route-map-surface live-map-shell dashboard-route-live-shell">
                         <div id="dashboard-route-map" aria-label="Live dashboard route map"></div>
                     </div>
@@ -194,7 +197,8 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""
     ></script>
-    <script>
+    <script type="module" src="{% static 'js/dashboard-map.js' %}"></script>
+    <script type="text/plain">
         (() => {
             const mapNode = document.getElementById("dashboard-route-map");
 

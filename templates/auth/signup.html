@@ -52,7 +52,7 @@
                     </div>
                 {% endif %}
 
-                <form method="post" class="auth-form">
+                <form method="post" class="auth-form" data-supabase-auth="signup">
                     {% csrf_token %}
 
                     {% if form.non_field_errors %}
@@ -64,7 +64,7 @@
                     {% endif %}
 
                     <div class="form-group">
-                        <label for="{{ form.username.id_for_label }}">Username</label>
+                        <label for="{{ form.username.id_for_label }}">Display name</label>
                         {{ form.username }}
                         {% for error in form.username.errors %}
                             <p class="field-error">{{ error }}</p>
@@ -95,7 +95,8 @@
                         {% endfor %}
                     </div>
 
-                    <button type="submit" class="btn btn-primary auth-submit">Register</button>
+                    <p role="status" aria-live="polite" data-auth-status></p>
+                    <button type="submit" class="btn btn-primary auth-submit" disabled>Register</button>
                 </form>
 
                 <p class="auth-switch">
@@ -135,6 +136,7 @@
             </aside>
         </div>
     </main>
+    <script type="module" src="{% static 'js/supabase-auth.js' %}"></script>
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="

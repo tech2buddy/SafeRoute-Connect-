@@ -3,6 +3,17 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
 
+class SupabaseLoginForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "auth-input", "autocomplete": "email", "placeholder": "Enter your email"}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "auth-input", "autocomplete": "current-password"}))
+
+
+class SupabaseSignupForm(SupabaseLoginForm):
+    username = forms.CharField(max_length=100, label="Display name", widget=forms.TextInput(attrs={"class": "auth-input", "autocomplete": "nickname"}))
+    password1 = forms.CharField(min_length=8, widget=forms.PasswordInput(attrs={"class": "auth-input", "autocomplete": "new-password", "minlength": "8"}))
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "auth-input", "autocomplete": "new-password"}))
+
+
 class SafeRouteLoginForm(AuthenticationForm):
     username = forms.CharField(
         label="Username",

@@ -1,0 +1,26 @@
+.support-welcome { padding:36px; border-radius:24px; background:radial-gradient(ellipse at 95% 0%,#347853,transparent 65%),#103c2b; color:white; }
+.support-welcome>span,.support-kicker { font-size:10px; letter-spacing:.15em; color:#a3e7ba; font-weight:700; }
+.support-welcome h2 { font-size:clamp(32px,4vw,46px); line-height:1.1; letter-spacing:-.04em; margin:20px 0; }
+.support-welcome p { font-size:13px; color:#c4ddcf; line-height:1.8; }
+.support-shortcuts { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:22px 0; }
+.support-shortcuts a { padding:22px; background:#fff; border:1px solid #dce7df; border-radius:16px; color:#217446; text-decoration:none; font-size:14px; font-weight:600; }
+.support-layout { grid-template-columns:minmax(0,1fr) 360px; align-items:start; gap:24px; }
+.support-layout>.dashboard-card { padding:28px; border-radius:22px; min-width:0; }
+.support-layout .dashboard-card-head h2 { font-size:24px; letter-spacing:-.03em; }
+.support-layout .dashboard-card-head a { font-size:11px; }
+.support-layout .app-simple-list { display:block; }
+.support-answer { border-top:1px solid #e2ebe5; padding:18px 0; }
+.support-answer summary { font-size:14px; font-weight:600; color:#34533f; cursor:pointer; line-height:1.6; }
+.support-answer p { font-size:13px; color:#78877d; line-height:1.85; margin:14px 0 0; }
+.support-layout .support-kicker { color:#18844c; }
+.support-layout .app-form-card h2 { font-size:23px; margin:14px 0; }
+.support-note,#support-draft-status { font-size:12px; color:#7b8b80; line-height:1.8; }
+.support-layout .app-form { max-width:none; }
+.support-layout input,.support-layout textarea,.support-layout select { box-sizing:border-box; width:100%; border-radius:12px; }
+.support-layout .route-find-button { width:100%; min-height:46px; }
+.support-emergency { border:1px solid #ecdfc5; border-radius:16px; background:#fcf7ed; padding:22px 26px; margin-top:24px; }
+.support-emergency strong { font-size:14px; color:#776132; }
+.support-emergency p { font-size:12px; color:#8b816b; line-height:1.8; margin:10px 0 0; }
+.support-answer summary:focus-visible,.support-shortcuts a:focus-visible { outline:3px solid #74b88e; outline-offset:4px; }
+@media(max-width:900px) { .support-layout { grid-template-columns:1fr; } }
+@media(max-width:600px) { .support-shortcuts { grid-template-columns:1fr; gap:10px; } .support-welcome,.support-layout>.dashboard-card { padding:24px; border-radius:18px; } .support-layout input,.support-layout textarea { font-size:16px; } }

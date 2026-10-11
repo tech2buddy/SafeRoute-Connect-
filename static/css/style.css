@@ -1666,7 +1666,7 @@ a {
     background: linear-gradient(180deg, #f5f7f3 0%, #eef3ee 100%);
 }
 
-.route-map-surface svg {
+.route-map-surface > svg {
     display: block;
     width: 100%;
     height: 100%;
