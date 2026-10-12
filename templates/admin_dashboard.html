@@ -8,9 +8,10 @@
 <button type="button" class="dashboard-nav-item admin-side-nav" data-section="tickets"><span class="admin-nav-index">04</span><span>Support tickets</span></button>
 <button type="button" class="dashboard-nav-item admin-side-nav" data-section="users"><span class="admin-nav-index">05</span><span>Members</span></button>
 <button type="button" class="dashboard-nav-item admin-side-nav" data-section="audit"><span class="admin-nav-index">06</span><span>Audit log</span></button>
+<button type="button" class="dashboard-nav-item admin-side-nav" data-section="reports"><span class="admin-nav-index">07</span><span>Generate reports</span></button>
 <a href="{% url 'routes' %}" class="dashboard-nav-item admin-back-link"><span aria-hidden="true">&larr;</span><span>Back to website</span></a>
 {% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'css/admin-workspace.css' %}?v=tickets-3">{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/admin-workspace.css' %}?v=reports-members-8">{% endblock %}
 {% block page_content %}
 <section class="admin-command"><div><span class="admin-eyebrow">SAFEROUTE / OPERATIONS</span><h2>Community control room<span>.</span></h2><p>Less noise. A clearer queue. Every decision accounted for.</p></div><span class="admin-access-pill">Restricted workspace</span></section>
 <p id="admin-status" role="status" aria-live="polite">Checking admin access...</p>
@@ -24,6 +25,7 @@
 <article><span class="admin-eyebrow">COMMUNITY OVERSIGHT</span><h3 id="overview-incidents">Loading reports...</h3><p>Inspect community submissions and remove incorrect or inappropriate reports.</p><button type="button" class="app-inline-button" data-overview-section="incidents">Review incidents</button></article>
 </div><p class="admin-overview-footnote">Support summary covers the latest 50 loaded tickets. Refresh a queue to retrieve updated data.</p>
 </section>
+<section id="admin-report-section" class="admin-overview" hidden><span class="admin-eyebrow">DATABASE REPORTS</span><h2>Generate a workspace report</h2><p>Incident dates use event time; support dates use submission time. Date boundaries are South African time. No personal emails or private messages are exported.</p><form id="admin-report-form" class="admin-report-form"><label>Report type<select name="report_kind"><option value="incidents">Incident management</option><option value="support">Support tickets</option></select></label><label>From<input type="date" name="start_day" required></label><label>Through<input type="date" name="end_day" required></label><button type="submit" class="app-inline-button">Generate report</button></form><p id="admin-report-status" role="status" aria-live="polite"></p><div class="admin-report-actions"><button id="admin-report-csv" type="button" class="app-inline-button" disabled>Download CSV</button><button id="admin-report-print" type="button" class="app-inline-button" disabled>Print / save PDF</button></div><div id="admin-report-output" class="admin-report-output"></div></section>
 <section class="admin-desk" hidden>
 <div class="admin-desk-head"><div><span class="admin-eyebrow">REVIEW DESK</span><h2>Focus on what matters.</h2></div><button type="button" id="admin-refresh" class="app-inline-button">Refresh data</button></div>
 <div class="admin-tabs" role="tablist" aria-label="Admin sections"><button type="button" id="tab-imports" role="tab" aria-selected="true" aria-controls="admin-queue-panel" data-tab="imports">AI queue <span></span></button><button type="button" id="tab-incidents" role="tab" aria-selected="false" aria-controls="admin-queue-panel" data-tab="incidents" tabindex="-1">Incidents <span></span></button><button type="button" id="tab-users" role="tab" aria-selected="false" aria-controls="admin-queue-panel" data-tab="users" tabindex="-1">Members <span></span></button><button type="button" id="tab-audit" role="tab" aria-selected="false" aria-controls="admin-queue-panel" data-tab="audit" tabindex="-1">Audit log <span></span></button></div>
@@ -33,4 +35,4 @@
 <div class="admin-policy"><span aria-hidden="true">!</span><p><strong>Review is not verification.</strong> AI discoveries remain unpublished until their event details and location are checked. This dashboard does not automatically publish them or rank route safety.</p></div>
 </div>
 {% endblock %}
-{% block extra_scripts %}<script type="module" src="{% static 'js/admin-workspace.js' %}?v=tickets-3"></script>{% endblock %}
+{% block extra_scripts %}<script type="module" src="{% static 'js/admin-workspace.js' %}?v=admin-login-9"></script><script type="module" src="{% static 'js/admin-reports.js' %}"></script>{% endblock %}

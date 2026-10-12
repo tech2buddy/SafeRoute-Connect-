@@ -1,4 +1,8 @@
 /* Page-local treatment: keep the rest of the workspace unchanged. */
+.route-risk-details { margin-top:16px; padding:16px; background:#f4f8f5; border:1px solid #dce8df; border-radius:12px; }
+.route-risk-details[hidden] { display:none; }
+.route-risk-details summary { cursor:pointer; color:#385e45; font-size:13px; font-weight:600; }
+.route-risk-details p,.route-risk-details li { font-size:11px; color:#75877b; line-height:1.8; overflow-wrap:anywhere; }
 .route-workbench .route-preview-toolbar { display:grid; grid-template-columns:minmax(180px,.8fr) minmax(0,1.5fr); align-items:center; gap:24px; padding:18px 20px; margin:16px 0 18px; border:1px solid #dfeae3; border-radius:16px; background:linear-gradient(115deg,#f0f8f3,#fafcfb); }
 .route-workbench .route-preview-toolbar .app-map-meta { margin:0; min-width:0; }
 .route-workbench .route-preview-toolbar .map-status { font-size:13px; font-weight:600; line-height:1.6; }

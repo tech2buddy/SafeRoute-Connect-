@@ -1,5 +1,18 @@
 .admin-command { display:flex; justify-content:space-between; align-items:center; gap:24px; padding:26px 30px; border:1px solid #d7e5dc; border-left:4px solid #16844c; border-radius:18px; background:radial-gradient(ellipse at 95% 0%,#d9eddf,transparent 65%),#f0f7f2; }
 .admin-eyebrow { color:#47825b; font-size:9px; letter-spacing:.16em; font-weight:700; }
+.admin-report-form { display:flex; flex-wrap:wrap; gap:16px; align-items:end; padding:20px 0; }
+.admin-report-form label { display:grid; gap:10px; color:#6f8a77; font-size:12px; }
+.admin-report-form :is(select,input) { padding:12px; border:1px solid #d6e5dc; border-radius:10px; background:#f9fcfa; font:inherit; }
+.admin-report-actions { display:flex; gap:12px; }
+.admin-report-output { overflow-x:auto; margin-top:24px; }
+.admin-report-output table { border-collapse:collapse; width:100%; font-size:11px; }
+.admin-report-output td,.admin-report-output th { padding:12px; border-bottom:1px solid #e0e9e3; text-align:left; color:#698473; overflow-wrap:anywhere; }
+.admin-response-form input { padding:12px; border:1px solid #d6e5dc; border-radius:10px; font:inherit; }
+@media print {
+ body.printing-admin-report * { visibility:hidden; }
+ body.printing-admin-report #admin-report-output,body.printing-admin-report #admin-report-output * { visibility:visible; }
+ body.printing-admin-report #admin-report-output { position:absolute; inset:0; margin:0; padding:20px; overflow:visible; }
+}
 .admin-desk[hidden],.admin-overview[hidden] { display:none; }
 .admin-overview { padding:28px; background:#fff; border:1px solid #dce7df; border-radius:20px; scroll-margin-top:90px; }
 .admin-overview-heading h2 { margin:12px 0; font-size:26px; letter-spacing:-.035em; }

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const source=readFileSync(new URL('./incident-date.js',import.meta.url),'utf8');
+const {validIncidentTime,localDateTime}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+const now=new Date(2026,9,12,14,30);
+assert.equal(localDateTime(now),'2026-10-12T14:30');
+assert(validIncidentTime('2026-10-11T14:30',now));
+assert(validIncidentTime('2026-10-12T14:30',now));
+assert(!validIncidentTime('2026-10-13T14:30',now));
+assert(!validIncidentTime('2026-10-12T14:31',now));
+assert(!validIncidentTime('invalid',now));
+assert(validIncidentTime('',now));
+console.log('Incident date tests passed: past, present, future, invalid, local formatting.');

@@ -1,8 +1,9 @@
 import { supabase } from './supabase-client.js';
 import { tileUrl, tileOptions } from './map-basemap.js';
 import { readIncidentFeed, appendProvenance } from './incident-feed.js';
-import { addDemoMapLayer } from './demo-map-layer.js';
 import { setupIncidentComposer } from './incident-composer.js';
+import { setupIncidentDate, validIncidentTime } from './incident-date.js';
+import { presentationMode } from './workspace-mode.js';
 
 const labels = { safe: 'Low concern', moderate: 'Use caution', risky: 'High risk' };
 const colors = { safe: '#149347', moderate: '#f59e0b', risky: '#ef4444' };
@@ -34,6 +35,7 @@ async function getReports() {
 }
 const form = document.getElementById('supabase-incident-form');
 if (form) {
+    setupIncidentDate(form.elements.occurred_at);
     const map = makeMap('incident-location-map');
     const status = document.getElementById('incident-status');
     const button = form.querySelector('[type="submit"]');
@@ -59,9 +61,10 @@ if (form) {
             const fields = new FormData(form);
             const occurred = fields.get('occurred_at');
             const occurredAt = occurred ? new Date(occurred) : new Date();
-            if (occurredAt > new Date()) throw new Error('The incident time cannot be in the future.');
+            if (!validIncidentTime(occurred)) throw new Error('The incident time must be valid and cannot be in the future.');
             const { error: saveError } = await supabase.from('incidents').insert({
                 user_id:data.user.id, incident_type:fields.get('incident_type'),
+                is_presentation:presentationMode(),
                 location:fields.get('location').trim(), severity:fields.get('severity'),
                 description:fields.get('description').trim(), occurred_at:occurredAt.toISOString(),
                 latitude:coordinates[0], longitude:coordinates[1],
@@ -94,7 +97,6 @@ if (form) {
 }
 if (document.getElementById('safety-map-canvas')) {
     const map = makeMap('safety-map-canvas');
-    addDemoMapLayer(map);
     const status = document.getElementById('safety-map-status');
     const list = document.querySelector('.safety-map-feed-list');
     const layer = L.featureGroup().addTo(map);
@@ -143,4 +145,5 @@ if (document.getElementById('safety-map-canvas')) {
     });
     document.getElementById('safety-map-locate').after(refreshButton);
     await refresh();
+    document.addEventListener('presentation-feed-updated',refresh);
 }

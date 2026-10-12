@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="{% static 'css/journey.css' %}?v=route-toolbar-4">
+    <link rel="stylesheet" href="{% static 'css/journey.css' %}?v=reported-risk-5">
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -33,7 +33,7 @@
                 </p>
 
                 {% for field in form %}
-                    <div class="form-group {% if field.name == 'safety_priority' %}route-preference-hidden{% endif %}">
+                    <div class="form-group">
                         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
                         {% for error in field.errors %}
@@ -43,7 +43,7 @@
                 {% endfor %}
 
                 <button type="button" class="route-find-button" id="preview-live-route">Find routes <span class="route-arrow" aria-hidden="true"></span></button>
-                <p class="app-helper-note">Routes follow roads. Report markers are context, not a guarantee of safety.</p>
+                <p class="app-helper-note">Options are ranked by reported exposure, not guaranteed safety. Routing does not create detours around incidents.</p>
             </form>
         </details>
 
@@ -106,6 +106,7 @@
             </div>
 
             <p class="app-card-copy" id="route-summary-copy">{{ route_result.summary }}</p>
+            <details id="route-risk-details" class="route-risk-details" hidden><summary>Why this risk rating?</summary><p id="route-risk-explanation"></p><ul id="route-risk-reports"></ul><p>Model v1: reports within 200 m, no older than 7 days. Severity weights: low concern 1, caution 3, high risk 6. Age multiplier: up to 1 day 1, up to 3 days 0.6, up to 7 days 0.3. Distance multiplier: up to 50 m 1, up to 100 m 0.75, up to 200 m 0.5. Total below 2 = lower exposure; 2 to below 6 = moderate; 6+ = higher. This is a heuristic, not a probability of crime.</p></details>
 
         </article>
     </div>
@@ -154,8 +155,9 @@
         import { tileUrl, tileOptions } from "{% static 'js/map-basemap.js' %}";
         import { setupJourney } from "{% static 'js/journey-navigation.js' %}";
         import { readIncidentFeed, appendProvenance } from "{% static 'js/incident-feed.js' %}";
-        import { addDemoMapLayer } from "{% static 'js/demo-map-layer.js' %}";
         import { lookupPlace } from "{% static 'js/place-search.js' %}?v=geoapify-1";
+        import { assessRoute, rankRoutes } from "{% static 'js/route-risk.js' %}?v=presentation-2";
+        import { presentationMode } from "{% static 'js/workspace-mode.js' %}";
         (() => {
             const defaultCenter = [-28.7282, 24.7499];
             const startField = document.getElementById("id_start_location");
@@ -181,6 +183,11 @@
             let locationMarker = null;
             let locationWatch = null;
             let incidentLayer = null;
+            let lastPreview = null;
+            let riskReports = null;
+            const presentationEnabled = presentationMode();
+            const scoringReports = () => riskReports;
+            let incidentReady = Promise.resolve();
             let journey = null;
             let previewGeneration = 0;
             let locationGeneration = 0;
@@ -229,9 +236,8 @@
                 L.tileLayer(tileUrl, tileOptions).addTo(map);
                 map.attributionControl.addAttribution('Address search by <a href="https://www.geoapify.com/">Geoapify</a>');
                 map.attributionControl.setPrefix(false);
-                addDemoMapLayer(map);
                 incidentLayer = L.featureGroup().addTo(map);
-                loadIncidents();
+                incidentReady = loadIncidents();
             }
 
             async function loadIncidents() {
@@ -239,7 +245,8 @@
                 try {
                     const { data:auth, error:authError } = await supabase.auth.getUser();
                     if (authError || !auth.user) throw new Error('Sign in to see reported incidents on this map.');
-                    const data = await readIncidentFeed();
+                    const data = await readIncidentFeed({strict:true});
+                    riskReports = data;
                     incidentLayer.clearLayers();
                     for (const report of data) {
                         const popup = document.createElement('div');
@@ -253,7 +260,7 @@
                         }).addTo(incidentLayer).bindPopup(popup);
                     }
                     incidentStatus.textContent = `${data.length} reported incidents loaded. Markers show reports, not verified route safety.`;
-                } catch (error) { incidentStatus.textContent = error.message; }
+                } catch (error) { riskReports = null; incidentStatus.textContent = `${error.message} Route risk cannot be assessed.`; }
             }
 
             function getRoutingProfile() {
@@ -302,6 +309,7 @@
                 riskSummary.textContent = 'Safety not assessed';
                 riskSummary.className = 'route-risk-tag';
                 routeSummary.textContent = 'This is a road-following route preview. Report markers provide context; routing does not yet avoid incidents or guarantee safety.';
+                document.getElementById('route-risk-details').hidden = true;
             }
 
             function clearRoute() {
@@ -338,7 +346,9 @@
                     throw new Error("No route was found for those locations.");
                 }
 
-                return { ...data.routes[0], alternatives:data.routes.slice(0,3) };
+                await incidentReady;
+                const alternatives = rankRoutes(data.routes.slice(0,3),scoringReports(),safetyField.value,Date.now(),{presentation:presentationEnabled});
+                return { ...alternatives[0], alternatives };
             }
 
             function formatMinutes(seconds) {
@@ -434,9 +444,10 @@
                     const heading = document.createElement('p'); heading.textContent = choices.length > 1 ? 'Choose your route' : 'One route available'; options.append(heading);
                     choices.forEach((choice,index) => {
                         const button = document.createElement('button'); button.type = 'button'; button.className = 'route-option';
+                        button.routeChoice = choice;
                         button.setAttribute('aria-pressed',String(index === 0));
                         const title = document.createElement('strong'); title.textContent = `${formatMinutes(choice.duration)} / ${(choice.distance/1000).toFixed(1)} km`;
-                        const note = document.createElement('small'); note.textContent = `Route ${index+1} - safety not assessed`;
+                        const note = document.createElement('small'); note.textContent = `Route ${index+1} - ${choice.assessment.label}${choice.assessment.score === null ? '' : ` / score ${choice.assessment.score}`}`;
                         button.append(title,note);
                         button.addEventListener('click', () => {
                             journey.stop(false);
@@ -455,12 +466,29 @@
             }
 
             function showRoute(route,startPoint,destinationPoint) {
+                    lastPreview = {route,startPoint,destinationPoint};
+                    const rating = assessRoute(route,scoringReports(),Date.now(),{presentation:presentationEnabled});
+                    const lineColor = {safe:'#168b4b',moderate:'#d99116',risky:'#dc5545',unknown:'#2563eb'}[rating.key];
+                    riskSummary.textContent = rating.label;
+                    riskSummary.className = `route-risk-tag ${rating.key}`;
+                    const warning = 'No reports is not proof of safety. Community reports are unverified; counts cover the loaded feed (maximum 200 reports). Alternatives only, not automatic incident-avoidance detours.';
+                    routeSummary.textContent = rating.score === null ? 'Report data is unavailable. Risk not assessed; do not treat this route as safe.' : `Exposure score ${rating.score}. ${rating.matches.length} eligible nearby reports. ${warning}`;
+                    document.getElementById('route-risk-details').hidden = false;
+                    document.getElementById('route-risk-explanation').textContent = rating.score === null ? 'A complete report feed could not be loaded.' : `${rating.label}: ${rating.matches.length} matching reports contribute ${rating.score} points.`;
+                    const reasons = document.getElementById('route-risk-reports'); reasons.replaceChildren();
+                    for (const match of rating.matches) {
+                        const item = document.createElement('li'); item.textContent = `${match.type.replaceAll('_',' ')} / ${match.location}: ${match.distance} m from route, ${match.ageDays.toFixed(1)} days old, +${match.contribution.toFixed(2)} points (${match.origin}).`; reasons.append(item);
+                    }
+                    for (const feature of rating.supports || []) {
+                        const item=document.createElement('li'); item.textContent=`Positive feature: ${feature.type} / ${feature.distance} m from route. Does not subtract hazard points.`; reasons.append(item);
+                    }
+                    if(presentationEnabled) routeSummary.textContent=`Presentation scenarios included. ${routeSummary.textContent} Positive features break ties between equally scored routes; they never cancel hazard points.`;
                     document.getElementById('route-result').classList.add('route-ready');
                     clearRoute();
 
                     routeLine = L.geoJSON(route.geometry, {
                         style: {
-                            color: "#2563eb",
+                            color: lineColor,
                             weight: 7,
                             opacity: 0.95,
                         },
@@ -495,7 +523,7 @@
                     document.getElementById('route-distance').textContent = `${(route.distance/1000).toFixed(1)} km`;
                     travelModeSummary.textContent = travelModeField.options[travelModeField.selectedIndex].text;
 
-                    setStatus(`Route marked in blue: ${(route.distance / 1000).toFixed(1)} km to your destination.`, "success");
+                    setStatus(`${rating.label}: ${(route.distance / 1000).toFixed(1)} km to your destination.`, "success");
                     journey.setRoute(route, destinationPoint);
                     document.getElementById('save-planned-route').hidden = false;
             }
@@ -590,6 +618,7 @@
                 locationWatch = null;
             }});
             function invalidatePlan() {
+                lastPreview = null;
                 document.getElementById('route-result').classList.remove('route-ready');
                 previewGeneration++;
                 journey.invalidate(); clearRoute();
@@ -607,6 +636,7 @@
                 startField.value = event.detail.start_location;
                 destinationField.value = event.detail.destination;
                 travelModeField.value = event.detail.travel_mode;
+                safetyField.value = event.detail.preference;
                 document.querySelector('.route-planning-sheet').open = true;
                 previewRoute();
                 document.querySelector('.route-workbench').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches ? 'instant' : 'smooth',block:'start'});
@@ -621,7 +651,33 @@
             destinationField.after(places);
             startSummary.textContent = 'Choose a start'; destinationSummary.textContent = 'Choose a destination'; etaSummary.textContent = '--';
             updateRiskSummary();
+            document.addEventListener('presentation-feed-updated',async()=> {
+                await loadIncidents();
+                if(lastPreview && !document.querySelector('.route-workbench').classList.contains('is-navigating')) {
+                    const {route,startPoint,destinationPoint}=lastPreview;
+                    showRoute(route,startPoint,destinationPoint);
+                    document.querySelectorAll('#route-options button').forEach((button,index)=> {
+                        const assessment=assessRoute(button.routeChoice,scoringReports(),Date.now(),{presentation:presentationEnabled});
+                        button.querySelector('small').textContent=`Route ${index+1} - ${assessment.label}${assessment.score===null ? '' : ` / score ${assessment.score}`}`;
+                    });
+                }
+            });
             setStatus("Use my location to show your position, or enter your starting point manually.");
+            const savedId = new URLSearchParams(location.search).get('saved');
+            if (savedId) {
+                (async () => {
+                    try {
+                        if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(savedId)) throw new Error('Invalid saved route reference.');
+                        setStatus('Opening your saved route...', 'loading');
+                        const {data:auth,error:authError} = await supabase.auth.getUser();
+                        if (authError || !auth.user) throw new Error('Sign in to open your saved route.');
+                        const {data:saved,error} = await supabase.from('saved_routes').select('*').eq('id',savedId).eq('user_id',auth.user.id).eq('is_presentation',presentationEnabled).maybeSingle();
+                        if (error) throw error;
+                        if (!saved) throw new Error('This saved route is unavailable in your current workspace.');
+                        document.dispatchEvent(new CustomEvent('reuse-route-search',{detail:saved}));
+                    } catch (error) { setStatus(error.message || 'Unable to open saved route.','error'); }
+                })();
+            }
             window.addEventListener("pagehide", () => {
                 if (locationWatch !== null) navigator.geolocation.clearWatch(locationWatch);
             });

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/personal-fields.css' %}">
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -95,6 +96,7 @@
                         {% endfor %}
                     </div>
 
+                    {% include 'includes/personal-fields.html' %}
                     <p role="status" aria-live="polite" data-auth-status></p>
                     <button type="submit" class="btn btn-primary auth-submit" disabled>Register</button>
                 </form>
@@ -136,7 +138,7 @@
             </aside>
         </div>
     </main>
-    <script type="module" src="{% static 'js/supabase-auth.js' %}"></script>
+    <script type="module" src="{% static 'js/supabase-auth.js' %}?v=personal-details-2"></script>
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="

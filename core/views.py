@@ -77,7 +77,7 @@ FAVORITE_ROUTES = [
 HELP_TOPICS = [
     {
         "title": "How route safety works",
-        "body": "Routes follow roads but are not currently ranked by crime risk. Incident markers provide context, not a safety guarantee. Always use your own judgement.",
+        "body": "Available road routes are compared using recent reports within 200 metres, weighted by severity, age, and distance. Open the risk explanation to see contributing reports. Lower reported exposure does not guarantee safety, and routes do not generate automatic incident-avoidance detours.",
     },
     {
         "title": "When to report an incident",
@@ -423,6 +423,14 @@ def settings_view(request):
         "form": form,
     }
     return render(request, "account.html", context)
+
+
+def admin_login_view(request):
+    return render(request, "auth/admin_login.html")
+
+
+def password_recovery_view(request, reset=False):
+    return render(request, "auth/password_recovery.html", {"reset":reset,"page_title":"Reset password" if reset else "Forgot password"})
 
 
 def admin_dashboard_view(request):

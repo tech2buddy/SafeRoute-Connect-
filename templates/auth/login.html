@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/password-recovery.css' %}">
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -79,6 +80,7 @@
                         {% endfor %}
                     </div>
 
+                    <a href="{% url 'forgot_password' %}" class="auth-forgot-link">Forgot password?</a>
                     <p role="status" aria-live="polite" data-auth-status></p>
                     <button type="submit" class="btn btn-primary auth-submit" disabled>Login</button>
                 </form>

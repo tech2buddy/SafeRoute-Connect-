@@ -18,7 +18,7 @@ if (form) {
                 const { data, error } = await supabase.auth.signUp({
                     email, password: fields.get('password1'),
                     options: {
-                        data: { display_name: fields.get('username').trim() },
+                        data: { display_name: fields.get('username').trim(), gender:fields.get('gender'),home_province:fields.get('home_province'),home_area:fields.get('home_area').trim() },
                         emailRedirectTo: `${location.origin}/accounts/login/`,
                     },
                 });

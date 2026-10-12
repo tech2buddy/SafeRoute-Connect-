@@ -18,6 +18,7 @@ function updateAvatar() {
 }
 new MutationObserver(updateAvatar).observe(name,{childList:true,characterData:true,subtree:true});
 function showSession(session) {
+    if(!session) sessionStorage.removeItem('saferoute-admin-entry');
     name.textContent = session ? (session.user.user_metadata.display_name || session.user.email) : 'Guest Explorer';
     accountLink.textContent = session ? 'Logout' : 'Login';
     accountLink.href = session ? '#logout' : '/accounts/login/';

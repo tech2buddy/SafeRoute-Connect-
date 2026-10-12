@@ -136,7 +136,7 @@ class SafeRouteSearchForm(forms.Form):
     safety_priority = forms.ChoiceField(
         label="Route preference",
         choices=[
-            ("safest", "Safest route"),
+            ("safest", "Lowest reported exposure"),
             ("balanced", "Balanced"),
             ("fastest", "Fastest available"),
         ],

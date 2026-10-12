@@ -1,4 +1,5 @@
 import { supabase } from './supabase-client.js';
+import { presentationMode } from './workspace-mode.js';
 
 const path = location.pathname;
 const relevant = ['/routes/', '/routes/history/', '/routes/find/'].includes(path);
@@ -25,6 +26,7 @@ if (form) {
             const fields = new FormData(form);
             const { error } = await supabase.from('saved_routes').insert({
                 user_id:user.id,
+                is_presentation:presentationMode(),
                 start_location:fields.get('start_location').trim(),
                 destination:fields.get('destination').trim(),
                 travel_mode:fields.get('travel_mode'), preference:fields.get('safety_priority'),
@@ -39,9 +41,14 @@ if (form) {
 function routeCard(route, editable) {
     const row = element('article','','saved-route-card');
     const copy = element('div','','recent-route-copy');
-    copy.append(element('strong', `${route.start_location} → ${route.destination}`),
+    const open = element('a','','saved-route-open');
+    open.href = `/routes/find/?saved=${encodeURIComponent(route.id)}`;
+    open.append(element('strong', `${route.start_location} → ${route.destination}`));
+    open.setAttribute('aria-label',`Open route from ${route.start_location} to ${route.destination} on the map`);
+    copy.append(open,
         element('small', `${new Date(route.created_at).toLocaleString()} · ${route.travel_mode} · ${route.preference} preference`));
     row.append(copy);
+    const view = element('a','View route on map','app-inline-button'); view.href=open.href; row.append(view);
     if (editable) {
         const actions = element('div','','app-action-row');
         const favorite = element('button', route.is_favorite ? 'Remove favorite' : 'Favorite','app-inline-button');
@@ -88,7 +95,7 @@ async function loadRoutes() {
     try {
         const user = await currentUser();
         const { data, error } = await supabase.from('saved_routes').select('*')
-            .eq('user_id',user.id).order('created_at',{ ascending:false });
+            .eq('user_id',user.id).eq('is_presentation',presentationMode()).order('created_at',{ ascending:false });
         if (error) throw error;
         list.replaceChildren();
         const visible = path === '/routes/history/' ? data : data.slice(0,4);

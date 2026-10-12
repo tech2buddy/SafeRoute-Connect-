@@ -75,4 +75,5 @@ if (dashboard || community || alerts) {
         }
     }
     await refresh();
+    document.addEventListener('presentation-feed-updated',refresh);
 }

@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
     <link rel="stylesheet" href="{% static 'css/workspace-mobile.css' %}?v=discovery-cards-2">
     <link rel="stylesheet" href="{% static 'css/account-controls.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/submission-history.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/personal-fields.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -199,10 +201,13 @@
         })();
     </script>
     <script type="module" src="{% static 'js/supabase-workspace.js' %}"></script>
+    <script type="module" src="{% static 'js/workspace-mode.js' %}"></script>
     <script type="module" src="{% static 'js/community-data.js' %}"></script>
-    <script type="module" src="{% static 'js/saved-routes.js' %}"></script>
-    <script type="module" src="{% static 'js/account-data.js' %}"></script>
+    <script type="module" src="{% static 'js/saved-routes.js' %}?v=open-on-map-2"></script>
+    <script type="module" src="{% static 'js/account-data.js' %}?v=personal-details-2"></script>
     <script type="module" src="{% static 'js/ai-discoveries.js' %}?v=2"></script>
     {% block extra_scripts %}{% endblock %}
+    <script type="module" src="{% static 'js/my-submissions.js' %}?v=1"></script>
+    <script type="module" src="{% static 'js/presentation-stream.js' %}?v=1"></script>
 </body>
 </html>

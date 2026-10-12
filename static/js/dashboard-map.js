@@ -1,12 +1,10 @@
 import { supabase } from './supabase-client.js';
 import { tileUrl, tileOptions } from './map-basemap.js';
 import { readIncidentFeed, appendProvenance } from './incident-feed.js';
-import { addDemoMapLayer } from './demo-map-layer.js';
 
 const map = L.map('dashboard-route-map', { zoomControl:true, scrollWheelZoom:true, dragging:true, touchZoom:true }).setView([-28.7381,24.7638],13);
 L.tileLayer(tileUrl, tileOptions).addTo(map);
 map.attributionControl.setPrefix(false);
-addDemoMapLayer(map);
 const status = document.getElementById('dashboard-map-status');
 const incidents = L.featureGroup().addTo(map);
 let userMarker, accuracyCircle;
@@ -24,10 +22,13 @@ document.getElementById('dashboard-locate').addEventListener('click', () => {
     }, () => { status.textContent = 'Location unavailable. You can still pan and zoom to explore incidents.'; },
     { enableHighAccuracy:true,timeout:20000,maximumAge:0 });
 });
+let initialFit=true;
+async function refreshMarkers() {
 try {
     const { data:auth,error:authError } = await supabase.auth.getUser();
     if (authError || !auth.user) throw new Error('Sign in to see community incidents.');
     const data = await readIncidentFeed();
+    incidents.clearLayers();
     for (const report of data) {
         const popup = document.createElement('div');
         for (const text of [report.incident_type.replaceAll('_',' '),report.location,report.description,new Date(report.occurred_at).toLocaleString()]) {
@@ -39,6 +40,9 @@ try {
         }).addTo(incidents).bindPopup(popup);
     }
     map.invalidateSize();
-    if (data.length) map.fitBounds(incidents.getBounds(),{ padding:[30,30],maxZoom:14 });
+    if (data.length && initialFit) { map.fitBounds(incidents.getBounds(),{ padding:[30,30],maxZoom:14 }); initialFit=false; }
     status.textContent = `${data.length} incident reports loaded (up to 200 most recent). Pan, zoom, or tap a marker for details.`;
 } catch (error) { status.textContent = error.message || 'Unable to load incident markers.'; }
+}
+await refreshMarkers();
+document.addEventListener('presentation-feed-updated',refreshMarkers);

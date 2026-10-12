@@ -1,4 +1,5 @@
 import { supabase } from './supabase-client.js';
+import { presentationMode } from './workspace-mode.js';
 const form = document.getElementById('account-form');
 const planner = document.getElementById('id_safety_priority');
 const status = document.getElementById('account-status');
@@ -16,8 +17,8 @@ async function loadProfileActivity(account) {
     const date = new Date(account.created_at);
     document.getElementById('profile-member-since').textContent = Number.isNaN(date.getTime()) ? 'SafeRoute member' : `Member since ${date.toLocaleDateString(undefined,{month:'long',year:'numeric'})}`;
     const results = await Promise.allSettled([
-        supabase.from('saved_routes').select('id',{count:'exact',head:true}).eq('user_id',account.id),
-        supabase.from('incidents').select('id',{count:'exact',head:true}).eq('user_id',account.id),
+        supabase.from('saved_routes').select('id',{count:'exact',head:true}).eq('user_id',account.id).eq('is_presentation',presentationMode()),
+        supabase.from('incidents').select('id',{count:'exact',head:true}).eq('user_id',account.id).eq('is_presentation',presentationMode()),
     ]);
     results.forEach((result,index)=> {
         const node=document.getElementById(index===0 ? 'profile-route-count' : 'profile-report-count');
@@ -37,6 +38,7 @@ if (form || planner) {
         if (profile) {
             form.elements.display_name.value = record?.display_name || user.user_metadata.display_name || '';
             document.getElementById('account-email').textContent = user.email;
+            for (const key of ['gender','home_province','home_area']) if(form.elements[key]) form.elements[key].value=record?.[key] ?? user.user_metadata[key] ?? (key==='gender' ? 'prefer_not_to_say' : '');
             updateProfileIdentity(form.elements.display_name.value);
             if (document.getElementById('profile-name')) loadProfileActivity(user).catch(()=>{});
         } else if (form && record) {
@@ -59,10 +61,11 @@ form?.addEventListener('submit', async event => {
         const record = profile ? { id:user.id,display_name:form.elements.display_name.value.trim() }
             : { user_id:user.id,route_preference:form.elements.route_preference.value,alert_radius:Number(form.elements.alert_radius.value) };
         if (profile && !record.display_name) throw new Error('Enter a display name.');
+        if(profile) for(const key of ['gender','home_province','home_area'])record[key]=form.elements[key].value.trim();
         const { error } = await supabase.from(profile ? 'profiles' : 'preferences').upsert(record);
         if (error) throw error;
         if (profile) {
-            const { error:syncError } = await supabase.auth.updateUser({ data:{ display_name:record.display_name } });
+            const { error:syncError } = await supabase.auth.updateUser({ data:{ display_name:record.display_name,gender:record.gender,home_province:record.home_province,home_area:record.home_area } });
             if (syncError) throw new Error('Profile saved; navigation name synchronization failed. Please retry.');
             const navigationName = document.querySelector('.dashboard-user-copy');
             if (navigationName) navigationName.textContent = record.display_name;

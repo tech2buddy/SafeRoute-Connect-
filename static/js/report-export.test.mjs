@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const source=readFileSync(new URL('./report-export.js',import.meta.url),'utf8');
+const {csvCell,reportCsv}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+assert.equal(csvCell('a"b'),'"a""b"');
+assert.equal(csvCell('=SUM(A1)'),'"\'=SUM(A1)"');
+assert.equal(csvCell('  +cmd'),'"\'  +cmd"');
+assert.equal(csvCell('a,b\nline'),'"a,b\nline"');
+assert.equal(csvCell(null),'""');
+const csv=reportCsv({kind:'support',workspace:'presentation',start_day:'2026-10-01',end_day:'2026-10-12',timezone:'Africa/Johannesburg',rows:[{id:'1',category:'technical',subject:'@attack',status:'open',submitted_at:'now',updated_at:'now'}]});
+assert(csv.includes('presentation')); assert(csv.includes("'@attack")); assert(!csv.includes('message'));
+console.log('CSV tests passed: quoting, formula protection, workspace attribution and privacy.');

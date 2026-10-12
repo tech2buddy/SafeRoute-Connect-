@@ -17,6 +17,8 @@ from .views import (
     signup_view,
     support_view,
     admin_dashboard_view,
+    password_recovery_view,
+    admin_login_view,
 )
 
 
@@ -26,6 +28,9 @@ urlpatterns = [
     path("preview/", public_page_view, {"page": "preview"}, name="preview"),
     path("contact/", public_page_view, {"page": "contact"}, name="contact"),
     path("accounts/login/", login_view, name="login"),
+    path("accounts/admin-login/", admin_login_view, name="admin_login"),
+    path("accounts/forgot-password/", password_recovery_view, {"reset":False}, name="forgot_password"),
+    path("accounts/reset-password/", password_recovery_view, {"reset":True}, name="reset_password"),
     path("accounts/signup/", signup_view, name="signup"),
     path("accounts/logout/", logout_view, name="logout"),
     path("routes/", routes_view, name="routes"),

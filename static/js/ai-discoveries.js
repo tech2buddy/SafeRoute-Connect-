@@ -1,5 +1,6 @@
 import { supabase } from './supabase-client.js';
-if (['/routes/','/routes/find/','/community/','/map/','/alerts/'].includes(location.pathname)) {
+import { presentationMode } from './workspace-mode.js';
+if (!presentationMode() && ['/routes/','/routes/find/','/community/','/map/','/alerts/'].includes(location.pathname)) {
     const node = (tag,text) => { const element = document.createElement(tag); element.textContent = text; return element; };
     const panel = node('section',''); panel.className = 'dashboard-card ai-discovery-panel';
     const header = node('div',''); header.className = 'ai-discovery-header';
